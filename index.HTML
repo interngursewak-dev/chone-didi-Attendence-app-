@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="pa">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Didi App">
+  <title>Didi — ਹਾਜ਼ਰੀ ਅਤੇ ਚੈੱਕਲਿਸਟ</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --pri: #5b21b6; --pri-light: #ede9fe; --pri-dark: #4c1d95;
+      --green: #166534; --green-bg: #dcfce7; --green-btn: #16a34a;
+      --red: #991b1b; --red-bg: #fee2e2; --red-btn: #dc2626;
+      --amber: #92400e; --amber-bg: #fef3c7;
+      --blue: #1e40af; --blue-bg: #dbeafe;
+      --grey: #f1f5f9; --muted: #64748b; --border: #e2e8f0;
+      --white: #fff; --black: #1e293b;
+      --radius: 12px; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    html, body { min-height: 100%; background: var(--grey); font-family: 'Segoe UI', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: var(--black); }
+
+    /* ── SCREENS ── */
+    .screen { display: none; min-height: 100vh; flex-direction: column; align-items: center; }
+    .screen.active { display: flex; }
+
+    /* ══════════ LOADING SCREEN ══════════ */
+    #scr-load {
+      justify-content: center; align-items: center; padding: 32px 20px;
+      background: linear-gradient(135deg, var(--pri-dark) 0%, var(--pri) 100%);
+    }
+    .load-logo { font-size: 3.5rem; margin-bottom: 16px; animation: pulse 2s infinite; }
+    .load-title { color: #fff; font-size: 1.4rem; font-weight: 800; text-align: center; margin-bottom: 4px; }
+    .load-sub { color: rgba(255,255,255,0.7); font-size: 0.85rem; text-align: center; margin-bottom: 32px; }
+    .load-card { background: rgba(255,255,255,0.12); border-radius: 16px; padding: 24px; width: 100%; max-width: 340px; }
+    .load-msg { color: #fff; font-size: 0.82rem; font-weight: 600; text-align: center; margin-bottom: 12px; min-height: 20px; }
+    .load-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 10px; overflow: hidden; }
+    .load-fill { height: 100%; width: 0%; background: #fff; border-radius: 10px; transition: width 0.5s ease; }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+
+    /* ══════════ ATTENDANCE SCREEN ══════════ */
+    #scr-attend { background: var(--grey); padding: 0 0 80px; }
+    .attend-header { width: 100%; background: linear-gradient(135deg, var(--pri-dark), var(--pri)); padding: 20px 20px 28px; }
+    .attend-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .attend-logo-icon { font-size: 1.6rem; }
+    .attend-logo-text { color: #fff; font-size: 1.1rem; font-weight: 800; }
+    .attend-date { color: rgba(255,255,255,0.8); font-size: 0.82rem; }
+    .attend-clock { color: #fff; font-size: 1.6rem; font-weight: 700; letter-spacing: 1px; }
+
+    .cam-card { width: 100%; max-width: 400px; margin: -16px auto 0; background: var(--white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+    .cam-wrap { position: relative; width: 100%; padding-bottom: 70%; background: #000; overflow: hidden; }
+    #video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    .face-oval { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: 175px; border: 2.5px dashed rgba(255,255,255,0.85); border-radius: 50%; pointer-events: none; box-shadow: 0 0 0 1000px rgba(0,0,0,0.35); display: none; }
+    .cam-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; z-index: 5; }
+    .cam-overlay.hidden { display: none; }
+    .cam-overlay-icon { font-size: 2.8rem; }
+    .cam-overlay-msg { color: #fff; font-size: 0.85rem; font-weight: 600; text-align: center; padding: 0 24px; line-height: 1.6; }
+    .cam-bar-wrap { width: 80%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 10px; overflow: hidden; }
+    .cam-bar-fill { height: 100%; width: 0%; background: #fff; border-radius: 10px; transition: width 0.5s; }
+
+    .attend-panel { padding: 16px 16px 20px; }
+    .sbar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--grey); border-radius: 8px; margin-bottom: 14px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot.green { background: #22c55e; }
+    .dot.amber { background: #f59e0b; animation: blink 1s infinite; }
+    .dot.red   { background: #ef4444; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .sbar-text { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+
+    .btn-punch { display: block; width: 100%; padding: 18px; border: none; border-radius: var(--radius); font-size: 1.05rem; font-weight: 800; cursor: pointer; text-align: center; background: var(--pri); color: #fff; margin-bottom: 10px; transition: all 0.2s; letter-spacing: 0.3px; -webkit-tap-highlight-color: transparent; }
+    .btn-punch:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-punch:active:not(:disabled) { transform: scale(0.97); }
+
+    .btn-sec { display: block; width: 100%; padding: 13px; border: 2px solid var(--border); border-radius: var(--radius); font-size: 0.88rem; font-weight: 700; cursor: pointer; text-align: center; background: var(--white); color: var(--black); margin-bottom: 10px; transition: transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    .btn-sec:active { transform: scale(0.97); }
+    .btn-sec:last-child { margin-bottom: 0; }
+
+    .alert { padding: 11px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; margin-top: 12px; line-height: 1.5; display: none; }
+    .alert.show { display: block; }
+    .alert.success { background: var(--green-bg); color: var(--green); }
+    .alert.error   { background: var(--red-bg);   color: var(--red); }
+    .alert.info    { background: var(--blue-bg);  color: var(--blue); }
+    .alert.warning { background: var(--amber-bg); color: var(--amber); }
+
+    /* ══════════ CHECKLIST SCREEN ══════════ */
+    #scr-checklist { background: var(--grey); padding-bottom: 80px; }
+    .cl-header { width: 100%; background: linear-gradient(135deg, var(--pri-dark), var(--pri)); padding: 20px 20px 32px; }
+    .cl-header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .cl-logo { color: #fff; font-size: 1.1rem; font-weight: 800; }
+    .cl-date { color: rgba(255,255,255,0.75); font-size: 0.75rem; }
+    .cl-signout { background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .cl-punch-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 20px; color: #fff; font-size: 0.78rem; font-weight: 700; margin-bottom: 14px; }
+    .cl-progress-wrap { background: rgba(255,255,255,0.2); border-radius: 10px; height: 8px; overflow: hidden; margin-bottom: 6px; }
+    .cl-progress-fill { height: 100%; background: #fff; border-radius: 10px; transition: width 0.4s ease; }
+    .cl-progress-label { color: rgba(255,255,255,0.85); font-size: 0.75rem; font-weight: 600; }
+
+    /* Tabs */
+    .tabs { display: flex; width: 100%; max-width: 480px; align-self: center; background: var(--white); border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 10; }
+    .tab { flex: 1; padding: 13px 8px; font-size: 0.8rem; font-weight: 700; text-align: center; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+    .tab.active { color: var(--pri); border-bottom-color: var(--pri); }
+
+    /* Task list */
+    .tab-content { display: none; width: 100%; max-width: 480px; align-self: center; padding: 14px 14px 0; }
+    .tab-content.active { display: block; }
+    .task-section-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 14px 0 8px; }
+    .task-section-label:first-child { margin-top: 0; }
+
+    .task-item { display: flex; align-items: flex-start; gap: 12px; background: var(--white); border-radius: 10px; padding: 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: all 0.2s; cursor: pointer; -webkit-tap-highlight-color: transparent; border: 2px solid transparent; }
+    .task-item.done { background: #f0fdf4; border-color: #bbf7d0; }
+    .task-item:active { transform: scale(0.98); }
+    .task-emoji { font-size: 1.4rem; flex-shrink: 0; margin-top: 1px; }
+    .task-body { flex: 1; }
+    .task-en { font-size: 0.83rem; font-weight: 600; color: var(--black); line-height: 1.45; }
+    .task-pa { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .task-item.done .task-en { text-decoration: line-through; color: var(--muted); }
+    .task-check { width: 24px; height: 24px; border-radius: 50%; border: 2.5px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; transition: all 0.2s; font-size: 0.75rem; }
+    .task-item.done .task-check { background: var(--green-btn); border-color: var(--green-btn); color: #fff; }
+
+    .weekly-day-header { background: var(--pri-light); color: var(--pri-dark); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 6px 12px; border-radius: 6px; margin: 16px 0 8px; display: flex; align-items: center; gap: 6px; }
+    .weekly-day-header.today-hl { background: var(--pri); color: #fff; }
+    .today-tag { font-size: 0.65rem; background: rgba(255,255,255,0.3); padding: 2px 6px; border-radius: 10px; }
+
+    .note-box { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 8px; padding: 10px 12px; font-size: 0.76rem; color: #92400e; line-height: 1.5; margin: 12px 0; }
+
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 0.85rem; }
+    .empty-state .es-icon { font-size: 2.5rem; margin-bottom: 8px; }
+
+    /* ══════════ ADMIN SCREEN ══════════ */
+    #scr-admin { background: var(--grey); padding: 0 0 80px; }
+    .admin-header { width: 100%; background: linear-gradient(135deg, #1e293b, #334155); padding: 20px 20px 28px; }
+    .admin-header-top { display: flex; align-items: center; justify-content: space-between; }
+    .admin-title { color: #fff; font-size: 1.1rem; font-weight: 800; }
+    .admin-back { background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+    .admin-body { width: 100%; max-width: 400px; align-self: center; padding: 14px; }
+    .admin-section { margin-bottom: 20px; }
+    .admin-section-title { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 10px; }
+    .admin-card { background: var(--white); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
+    .reg-info { font-size: 0.82rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
+    .flabel { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 5px; }
+    .finput { width: 100%; padding: 11px 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.92rem; outline: none; margin-bottom: 12px; }
+    .finput:focus { border-color: var(--pri); }
+    .btn-admin { display: block; width: 100%; padding: 13px; border: none; border-radius: var(--radius); font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; margin-bottom: 10px; -webkit-tap-highlight-color: transparent; transition: transform 0.1s; }
+    .btn-admin:active { transform: scale(0.97); }
+    .btn-admin:last-child { margin-bottom: 0; }
+    .btn-admin.pri { background: var(--pri); color: #fff; }
+    .btn-admin.danger { background: var(--red-btn); color: #fff; }
+    .btn-admin.outline { background: var(--white); color: var(--black); border: 2px solid var(--border); }
+
+    /* Report list in admin */
+    .rpt-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .rpt-row:last-child { border-bottom: none; }
+    .rpt-name { font-size: 0.82rem; font-weight: 600; }
+    .rpt-time { font-size: 0.75rem; color: var(--muted); }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.68rem; font-weight: 800; }
+    .badge-in  { background: var(--green-bg); color: var(--green); }
+    .badge-out { background: var(--red-bg);   color: var(--red); }
+
+    /* ══════════ SUCCESS FLASH ══════════ */
+    #success-flash { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; padding: 20px; }
+    #success-flash.show { display: flex; }
+    .sf-card { background: #fff; border-radius: 20px; padding: 36px 28px; text-align: center; width: 100%; max-width: 320px; animation: popUp 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+    .sf-icon { font-size: 3.5rem; margin-bottom: 12px; }
+    .sf-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .sf-badge.in  { background: var(--green-bg); color: var(--green); }
+    .sf-badge.out { background: var(--red-bg);   color: var(--red); }
+    .sf-name { font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+    .sf-time { font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; }
+    .sf-hours { background: var(--green-bg); color: var(--green); padding: 8px 20px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; margin-bottom: 20px; display: none; }
+    .sf-btn { width: 100%; padding: 14px; background: var(--pri); color: #fff; border: none; border-radius: var(--radius); font-size: 0.95rem; font-weight: 700; cursor: pointer; }
+    @keyframes popUp { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    /* ══════════ BOTTOM NAV ══════════ */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); border-top: 2px solid var(--border); display: flex; z-index: 50; padding-bottom: env(safe-area-inset-bottom); }
+    .bottom-nav.hidden { display: none; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px 4px; cursor: pointer; color: var(--muted); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; gap: 4px; -webkit-tap-highlight-color: transparent; transition: color 0.2s; }
+    .nav-item.active { color: var(--pri); }
+    .nav-icon { font-size: 1.3rem; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN 1: LOADING                              -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="scr-load" class="screen active">
+  <div class="load-logo">🏠</div>
+  <div class="load-title">Didi ਚੈੱਕਲਿਸਟ</div>
+  <div class="load-sub">Attendance + Daily Checklist</div>
+  <div class="load-card">
+    <div class="load-msg" id="ld-msg">Starting up…</div>
+    <div class="load-bar"><div class="load-fill" id="ld-fill"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN 2: ATTENDANCE (punch in)                -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="scr-attend" class="screen">
+  <div class="attend-header">
+    <div class="attend-logo">
+      <div class="attend-logo-icon">🏠</div>
+      <div>
+        <div class="attend-logo-text">Didi ਹਾਜ਼ਰੀ</div>
+        <div class="attend-date" id="att-date">—</div>
+      </div>
+    </div>
+    <div class="attend-clock" id="att-clock">--:--</div>
+  </div>
+
+  <div class="cam-card" style="width:100%;max-width:480px;align-self:center;margin:-16px 0 0;">
+    <div class="cam-wrap">
+      <video id="video" autoplay muted playsinline webkit-playsinline></video>
+      <div class="face-oval" id="oval"></div>
+      <div class="cam-overlay" id="cam-overlay">
+        <div class="cam-overlay-icon" id="co-icon">🧠</div>
+        <div class="cam-overlay-msg" id="co-msg">Loading AI…<br>Please wait</div>
+        <div class="cam-bar-wrap"><div class="cam-bar-fill" id="co-bar"></div></div>
+      </div>
+    </div>
+
+    <div class="attend-panel">
+      <div class="sbar">
+        <div class="dot amber" id="sdot"></div>
+        <span class="sbar-text" id="stext">Starting up…</span>
+      </div>
+      <button class="btn-punch" id="btn-punch" disabled>📷 ਹਾਜ਼ਰੀ ਦਰਜ ਕਰੋ — Mark Attendance</button>
+      <div class="alert" id="att-alert"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN 3: CHECKLIST                            -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="scr-checklist" class="screen">
+  <div class="cl-header">
+    <div class="cl-header-top">
+      <div>
+        <div class="cl-logo">🏠 Didi ਚੈੱਕਲਿਸਟ</div>
+        <div class="cl-date" id="cl-date">—</div>
+      </div>
+      <div style="text-align:right;">
+        <button class="cl-signout" onclick="showAdminScreen()">⚙️ Admin</button>
+        <div class="cl-date" id="cl-clock" style="margin-top:4px;color:#fff;font-weight:700;font-size:1rem;">--:--</div>
+      </div>
+    </div>
+    <div class="cl-punch-badge">✅ ਪੁੱਜ ਗਏ — Punched In: <span id="cl-punch-time">--:--</span></div>
+    <div class="cl-progress-wrap">
+      <div class="cl-progress-fill" id="cl-prog-fill" style="width:0%"></div>
+    </div>
+    <div class="cl-progress-label" id="cl-prog-label">0 of 0 tasks done</div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" style="width:100%;max-width:480px;align-self:center;">
+    <div class="tab active" id="tab-daily"   onclick="switchTab('daily')">📋 ਰੋਜ਼ਾਨਾ<br><small>Daily</small></div>
+    <div class="tab"        id="tab-weekly"  onclick="switchTab('weekly')">📅 ਹਫ਼ਤਾਵਾਰੀ<br><small>Weekly</small></div>
+    <div class="tab"        id="tab-monthly" onclick="switchTab('monthly')">🗓️ ਮਹੀਨਾਵਾਰੀ<br><small>Monthly</small></div>
+  </div>
+
+  <!-- Daily tab -->
+  <div class="tab-content active" id="tc-daily">
+    <div class="note-box">⚠️ ਗਰਮੀਆਂ: ਰੰਗਦਾਰ ਕੱਪੜੇ 2 ਘੰਟੇ ਤੋਂ ਵੱਧ ਧੁੱਪ ਵਿੱਚ ਨਾ ਛੱਡੋ — Colours FADE! &nbsp;|&nbsp; Lights OFF before leaving.</div>
+    <div id="daily-tasks-list"></div>
+  </div>
+
+  <!-- Weekly tab -->
+  <div class="tab-content" id="tc-weekly">
+    <div id="weekly-tasks-list"></div>
+  </div>
+
+  <!-- Monthly tab -->
+  <div class="tab-content" id="tc-monthly">
+    <div id="monthly-tasks-list"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN 4: ADMIN                                -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="scr-admin" class="screen">
+  <div class="admin-header">
+    <div class="admin-header-top">
+      <div class="admin-title">⚙️ Admin Panel</div>
+      <button class="admin-back" onclick="backFromAdmin()">← Back</button>
+    </div>
+  </div>
+
+  <div class="admin-body">
+
+    <div class="admin-section">
+      <div class="admin-section-title">Face Registration</div>
+      <div class="admin-card">
+        <div class="reg-info" id="reg-status-msg">Checking registration status…</div>
+        <!-- Admin camera for registration -->
+        <div id="reg-cam-wrap" class="cam-wrap" style="border-radius:10px;overflow:hidden;margin-bottom:12px;display:none;">
+          <video id="video2" autoplay muted playsinline webkit-playsinline style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);"></video>
+          <div class="face-oval" id="oval2" style="display:block;"></div>
+        </div>
+        <label class="flabel">Name (should be "Didi" or her actual name)</label>
+        <input type="text" id="reg-name" class="finput" placeholder="e.g. Didi" value="Didi">
+        <button class="btn-admin pri" id="btn-register" onclick="startRegistration()">📸 Scan &amp; Register Face</button>
+        <div class="alert" id="reg-alert"></div>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-section-title">Manual Attendance</div>
+      <div class="admin-card">
+        <button class="btn-admin outline" onclick="manualPunchIn()">✅ Force Punch In (Today)</button>
+        <button class="btn-admin outline" onclick="adminPunchOut()">🔴 Record Punch Out</button>
+        <div class="alert" id="manual-alert"></div>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-section-title">Today's Report</div>
+      <div class="admin-card" id="admin-report-card">
+        <div style="color:var(--muted);font-size:0.82rem;">Tap below to load report</div>
+        <button class="btn-admin outline" style="margin-top:10px;" onclick="loadAdminReport()">📋 Load Today's Report</button>
+        <div id="admin-report-content" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-section-title">Sheet Setup (Run Once)</div>
+      <div class="admin-card">
+        <div class="reg-info">After deploying the Google Apps Script, tap below to create all required sheets automatically.</div>
+        <button class="btn-admin outline" onclick="runSheetSetup()">🔧 Setup Google Sheets</button>
+        <div class="alert" id="setup-alert"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SUCCESS FLASH                                  -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="success-flash">
+  <div class="sf-card">
+    <div class="sf-icon" id="sf-icon">✅</div>
+    <div class="sf-badge in" id="sf-badge">PUNCHED IN</div>
+    <div class="sf-name" id="sf-name">Didi</div>
+    <div class="sf-time" id="sf-time">--:-- · DD MMM YYYY</div>
+    <div class="sf-hours" id="sf-hours"></div>
+    <button class="sf-btn" onclick="closeSuccess()">ਠੀਕ ਹੈ — OK ✓</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  BOTTOM NAV (shown on checklist + admin)        -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="bottom-nav hidden" id="bottom-nav">
+  <div class="nav-item active" id="nav-checklist" onclick="navTo('checklist')">
+    <span class="nav-icon">📋</span>ਚੈੱਕਲਿਸਟ
+  </div>
+  <div class="nav-item" id="nav-admin" onclick="navTo('admin')">
+    <span class="nav-icon">⚙️</span>Admin
+  </div>
+</div>
+
+<script>
+// ╔═══════════════════════════════════════════════════════════╗
+//  DIDI ATTENDANCE + CHECKLIST APP
+//  Replace GAS_URL with your deployed Google Apps Script URL
+// ╚═══════════════════════════════════════════════════════════╝
+
+const GAS_URL    = 'https://script.google.com/macros/s/AKfycbzu_UUrx4EtkfOKeI_xcIzz8G-dy0Edf1I2w9LTqK6ERp9EeU7e-_Er4AKue-R-Ck35/exec';
+const DIDI_NAME  = 'Didi';
+const MODEL_URL  = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+const MODEL_CACHE = 'didi-app-models-v1';
+
+// ── Face API tuning ──
+const THRESHOLD      = 0.45;
+const DETECT_FRAMES  = 3;
+const REG_FRAMES     = 6;
+const FRAME_GAP_MS   = 100;
+const MIN_SCORE      = 0.58;
+const MIN_FACE_RATIO = 0.04;
+
+// ── App state ──
+var faceapi     = null;
+var faceMatcher = null;
+var detectOpts  = null;
+var isReady     = false;
+var isBusy      = false;
+var currentScreen = 'load';
+var punchInTime = null;
+
+// ── localStorage keys ──
+function todayStr() {
+  return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+}
+const PUNCH_KEY  = () => 'didi_punch_'  + todayStr();
+const TASKS_KEY  = () => 'didi_tasks_'  + todayStr();
+
+// ════════════════════════════════════
+//  TASK DATA (from Didi_Checklists.xlsx)
+// ════════════════════════════════════
+
+const DAILY_TASKS = [
+  { id:'D01', emoji:'🗑️', en:'Empty all dustbins, wash & sun-dry, put fresh bags. Clean outside street (gali).', pa:'ਕੂੜੇ ਦੇ ਡੱਬੇ ਖਾਲੀ ਕਰੋ, ਧੋਵੋ, ਧੁੱਪ ਵਿੱਚ ਸੁਕਾਓ' },
+  { id:'D02', emoji:'🧹', en:'Sweep Ground Floor — every corner, under furniture.', pa:'ਹੇਠਲੀ ਮੰਜ਼ਿਲ ਝਾੜੂ ਲਗਾਓ' },
+  { id:'D03', emoji:'🧹', en:'Sweep Top Floor — every corner, under furniture.', pa:'ਉੱਪਰਲੀ ਮੰਜ਼ਿਲ ਝਾੜੂ ਲਗਾਓ' },
+  { id:'D04', emoji:'🪣', en:'Mop Ground Floor — DRY mop only! Squeeze cloth hard, floor dries fast.', pa:'ਹੇਠਲੀ ਮੰਜ਼ਿਲ ਪੂੰਝੋ (ਸੁੱਕਾ ਮੋਪ ਹੀ)' },
+  { id:'D05', emoji:'🪣', en:'Mop Top Floor — DRY mop only! Squeeze cloth hard, floor dries fast.', pa:'ਉੱਪਰਲੀ ਮੰਜ਼ਿਲ ਪੂੰਝੋ (ਸੁੱਕਾ ਮੋਪ ਹੀ)' },
+  { id:'D06', emoji:'🍳', en:'Cook dinner. Wash all utensils. Wipe stove & kitchen counters clean.', pa:'ਰਾਤ ਦਾ ਖਾਣਾ ਬਣਾਓ, ਭਾਂਡੇ ਧੋਵੋ' },
+  { id:'D07', emoji:'🍽️', en:'Clean kitchen surfaces, stove top, sink. Leave kitchen spotless.', pa:'ਰਸੋਈ ਸਾਫ਼ ਕਰੋ — ਚੁੱਲ੍ਹਾ, ਸਿੰਕ, ਕਾਊਂਟਰ' },
+  { id:'D08', emoji:'🫙', en:'Once utensils are dry, put each item back in its correct drawer/cabinet.', pa:'ਭਾਂਡੇ ਸੁੱਕ ਜਾਣ ਤੋਂ ਬਾਅਦ ਸਹੀ ਜਗ੍ਹਾ ਰੱਖੋ' },
+  { id:'D09', emoji:'🧺', en:'Washing machine (if used) — wipe drum & detergent tray, leave door open to air-dry.', pa:'ਵਾਸ਼ਿੰਗ ਮਸ਼ੀਨ (ਜੇ ਵਰਤੀ) — ਡਰੱਮ ਪੂੰਝੋ, ਦਰਵਾਜ਼ਾ ਖੁੱਲ੍ਹਾ ਛੱਡੋ' },
+  { id:'D10', emoji:'🌿', en:'Clean the lawn area, attic stairs, and street (gali) daily.', pa:'ਲਾਅਨ, ਅਟਾਰੀ ਦੀਆਂ ਪੌੜੀਆਂ ਅਤੇ ਗਲੀ ਸਾਫ਼ ਕਰੋ' },
+  { id:'D11', emoji:'🏠', en:'Tidy up — remotes, cushions, shoes, toys back in their correct places.', pa:'ਚੀਜ਼ਾਂ ਸਹੀ ਥਾਂ ਰੱਖੋ — ਰਿਮੋਟ, ਸਿਰਹਾਣੇ, ਜੁੱਤੇ, ਖਿਡੌਣੇ' },
+];
+
+// Weekly tasks by day (0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat)
+const WEEKLY_TASKS = [
+  { id:'W01', day:1, emoji:'🛏️', en:'Change ALL bedsheets in the house. Put old ones for washing.', pa:'ਸਾਰੀਆਂ ਬੈੱਡਸ਼ੀਟਾਂ ਬਦਲੋ' },
+  { id:'W02', day:2, emoji:'🧊', en:'Clean Top Floor fridge — wipe all shelves inside & outside.', pa:'ਉੱਪਰਲੀ ਮੰਜ਼ਿਲ ਦਾ ਫਰਿੱਜ ਸਾਫ਼ ਕਰੋ' },
+  { id:'W03', day:2, emoji:'🧊', en:'Clean Ground Floor fridge — wipe all shelves inside & outside.', pa:'ਹੇਠਲੀ ਮੰਜ਼ਿਲ ਦਾ ਫਰਿੱਜ ਸਾਫ਼ ਕਰੋ' },
+  { id:'W04', day:2, emoji:'🪟', en:'Clean ALL windows with Colin spray — wipe both sides.', pa:'ਸਾਰੀਆਂ ਖਿੜਕੀਆਂ Colin ਨਾਲ ਸਾਫ਼ ਕਰੋ (ਦੋਵੇਂ ਪਾਸੇ)' },
+  { id:'W05', day:3, emoji:'🧺', en:'Laundry Day — wash all clothes.', pa:'ਕੱਪੜੇ ਧੋਵੋ — ਲਾਂਡਰੀ ਦਿਨ' },
+  { id:'W06', day:3, emoji:'⚠️', en:'Colourful clothes in sun MAX 2 hours — bring inside as soon as dry!', pa:'ਰੰਗਦਾਰ ਕੱਪੜੇ 2 ਘੰਟੇ ਤੋਂ ਵੱਧ ਧੁੱਪ ਵਿੱਚ ਨਾ ਛੱਡੋ' },
+  { id:'W07', day:4, emoji:'🚿', en:'Wash the lawn washroom — floor, toilet, sink, walls.', pa:'ਲਾਅਨ ਵਾਸ਼ਰੂਮ ਧੋਵੋ — ਫ਼ਰਸ਼, ਟਾਇਲਟ, ਸਿੰਕ, ਦੀਵਾਰਾਂ' },
+  { id:'W08', day:4, emoji:'📦', en:'Organize the store room — put everything in order.', pa:'ਸਟੋਰ ਰੂਮ ਸਾਫ਼ ਕਰੋ — ਸਭ ਸਮਾਨ ਸਹੀ ਰੱਖੋ' },
+  { id:'W09', day:5, emoji:'🚽', en:'All washrooms deep clean — toilet, floor, walls.', pa:'ਸਾਰੇ ਵਾਸ਼ਰੂਮਾਂ ਦੀ ਡੂੰਘੀ ਸਫ਼ਾਈ — ਟਾਇਲਟ, ਫ਼ਰਸ਼, ਦੀਵਾਰਾਂ' },
+  { id:'W10', day:5, emoji:'🪟', en:'Clean all bathroom tiles — scrub grout lines if needed.', pa:'ਸਾਰੇ ਟਾਇਲਾਂ ਸਾਫ਼ ਕਰੋ' },
+  { id:'W11', day:5, emoji:'🚰', en:'Clean all sinks in house — wipe taps, remove water marks.', pa:'ਸਾਰੇ ਸਿੰਕ ਸਾਫ਼ ਕਰੋ — ਟੂਟੀਆਂ ਅਤੇ ਪਾਣੀ ਦੇ ਦਾਗ਼ ਹਟਾਓ' },
+  { id:'W12', day:6, emoji:'🪞', en:'Clean ALL glass surfaces in the house — mirrors, glass panels.', pa:'ਘਰ ਦੇ ਸਾਰੇ ਸ਼ੀਸ਼ੇ ਸਾਫ਼ ਕਰੋ' },
+  { id:'W13', day:6, emoji:'🚪', en:'Wipe down ALL doors — both sides, handles & frames.', pa:'ਸਾਰੇ ਦਰਵਾਜ਼ੇ ਪੂੰਝੋ — ਦੋਵੇਂ ਪਾਸੇ, ਹੈਂਡਲ ਅਤੇ ਫ਼ਰੇਮ' },
+  { id:'W14', day:0, emoji:'🍳', en:'Make breakfast for the whole family — everyone is home today!', pa:'ਪੂਰੇ ਪਰਿਵਾਰ ਲਈ ਸਵੇਰ ਦਾ ਨਾਸ਼ਤਾ ਬਣਾਓ' },
+  { id:'W15', day:0, emoji:'🍛', en:'Cook lunch for the whole family.', pa:'ਪੂਰੇ ਪਰਿਵਾਰ ਲਈ ਦੁਪਹਿਰ ਦਾ ਖਾਣਾ ਬਣਾਓ' },
+];
+
+// Monthly tasks — by week of month (1–4)
+const MONTHLY_TASKS = [
+  { id:'M01', week:1, emoji:'🪑', en:'Deep clean behind & under ALL furniture — move pieces, sweep, mop underneath.', pa:'ਸਾਰੇ ਫ਼ਰਨੀਚਰ ਦੇ ਪਿੱਛੇ ਅਤੇ ਹੇਠਾਂ ਡੂੰਘੀ ਸਫ਼ਾਈ' },
+  { id:'M02', week:1, emoji:'💡', en:'Clean all light fixtures, bulbs, and ceiling fans — dust & wipe blades.', pa:'ਸਾਰੀਆਂ ਲਾਈਟਾਂ ਅਤੇ ਪੱਖੇ ਸਾਫ਼ ਕਰੋ' },
+  { id:'M03', week:2, emoji:'❄️', en:'Clean AC filters & fan blades on Top Floor — dust, wash filter if needed.', pa:'ਉੱਪਰਲੀ ਮੰਜ਼ਿਲ AC ਫ਼ਿਲਟਰ ਅਤੇ ਪੱਖੇ ਸਾਫ਼ ਕਰੋ' },
+  { id:'M04', week:2, emoji:'❄️', en:'Clean AC filters & fan blades on Ground Floor — dust, wash filter if needed.', pa:'ਹੇਠਲੀ ਮੰਜ਼ਿਲ AC ਫ਼ਿਲਟਰ ਅਤੇ ਪੱਖੇ ਸਾਫ਼ ਕਰੋ' },
+  { id:'M05', week:3, emoji:'🗄️', en:'Clean inside all wardrobes & cupboards — remove items, wipe shelves, restack neatly.', pa:'ਸਾਰੀਆਂ ਅਲਮਾਰੀਆਂ ਅੰਦਰੋਂ ਸਾਫ਼ ਕਰੋ' },
+  { id:'M06', week:3, emoji:'🧴', en:'Restock cleaning supplies — check attic inventory, note what is running low.', pa:'ਸਫ਼ਾਈ ਦਾ ਸਾਮਾਨ ਚੈੱਕ ਕਰੋ — ਅਟਾਰੀ ਵਿੱਚੋਂ ਦੇਖੋ ਕੀ ਖ਼ਤਮ ਹੋਣ ਵਾਲਾ ਹੈ' },
+  { id:'M07', week:4, emoji:'🍳', en:'Deep clean gas stove — remove burners, wash grates, scrub surface.', pa:'ਗੈਸ ਚੁੱਲ੍ਹੇ ਦੀ ਡੂੰਘੀ ਸਫ਼ਾਈ — ਬਰਨਰ ਕੱਢੋ, ਧੋਵੋ' },
+  { id:'M08', week:4, emoji:'🥫', en:'Organize kitchen pantry & check expiry dates on all food packets/bottles.', pa:'ਰਸੋਈ ਦੇ ਸਾਮਾਨ ਦੀ ਮਿਤੀ ਚੈੱਕ ਕਰੋ, ਸਹੀ ਕ੍ਰਮ ਵਿੱਚ ਰੱਖੋ' },
+];
+
+const DAY_NAMES_PA = ['ਐਤਵਾਰ Sun', 'ਸੋਮਵਾਰ Mon', 'ਮੰਗਲਵਾਰ Tue', 'ਬੁੱਧਵਾਰ Wed', 'ਵੀਰਵਾਰ Thu', 'ਸ਼ੁੱਕਰਵਾਰ Fri', 'ਸ਼ਨੀਵਾਰ Sat'];
+
+// ════════════════════════════════════
+//  CLOCK & DATE
+// ════════════════════════════════════
+function fmtTime(d) {
+  d = d || new Date();
+  var h = d.getHours(), m = d.getMinutes(), ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return h + ':' + String(m).padStart(2,'0') + ' ' + ap;
+}
+function fmtDate(d) {
+  d = d || new Date();
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return DAY_NAMES_PA[d.getDay()].split(' ')[1] + ', ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+}
+function tickClock() {
+  var t = fmtTime();
+  var el1 = document.getElementById('att-clock');
+  var el2 = document.getElementById('cl-clock');
+  if (el1) el1.textContent = t;
+  if (el2) el2.textContent = t;
+}
+tickClock(); setInterval(tickClock, 10000);
+
+function setDates() {
+  var d = new Date();
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var full = DAY_NAMES_PA[d.getDay()].split(' ')[0] + ' ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+  var el1 = document.getElementById('att-date');
+  var el2 = document.getElementById('cl-date');
+  if (el1) el1.textContent = full;
+  if (el2) el2.textContent = full;
+}
+setDates();
+
+// ════════════════════════════════════
+//  INPUT SIZE DETECTION
+// ════════════════════════════════════
+function pickInputSize() {
+  var cores = navigator.hardwareConcurrency || 2;
+  var memGB = navigator.deviceMemory || 2;
+  if (cores <= 2 || memGB <= 1) return 128;
+  return 160;
+}
+var INPUT_SIZE = pickInputSize();
+
+// ════════════════════════════════════
+//  STARTUP: check if already punched in today
+// ════════════════════════════════════
+window.addEventListener('DOMContentLoaded', function() {
+  prog('Checking attendance status…', 5);
+  var savedPunch = localStorage.getItem(PUNCH_KEY());
+
+  if (savedPunch) {
+    // Already punched in today — skip attendance screen
+    punchInTime = savedPunch;
+    prog('Already punched in — loading checklist…', 30);
+    document.getElementById('cl-punch-time').textContent = savedPunch;
+    loadFaceApiScript(true); // still load models (for admin registration), but go to checklist after
+  } else {
+    // Need to punch in — show attendance screen
+    prog('Loading camera…', 10);
+    startCamera();
+    loadFaceApiScript(false);
+  }
+});
+
+// ════════════════════════════════════
+//  CAMERA STARTUP
+// ════════════════════════════════════
+var cameraStarted = false;
+function startCamera() {
+  if (cameraStarted) return;
+  cameraStarted = true;
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode:'user', width:{ideal:320}, height:{ideal:240} }, audio: false
+  }).then(function(stream) {
+    var v = document.getElementById('video');
+    v.srcObject = stream; v.play();
+    // also wire up video2 (admin cam) if present
+    var v2 = document.getElementById('video2');
+    if (v2) { v2.srcObject = stream; }
+    prog('Camera ready — loading AI…', 20);
+  }).catch(function(err) {
+    setOverlay('❌', 'Camera error: ' + err.message + '\nAllow camera access and reload.', 100, '#f87171');
+  });
+}
+
+// ════════════════════════════════════
+//  FACE-API LOADING
+// ════════════════════════════════════
+var skipToChecklist = false;
+function loadFaceApiScript(goChecklist) {
+  skipToChecklist = goChecklist;
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js';
+  s.async = true;
+  s.onload = function() { faceapi = window.faceapi; loadModels(); };
+  s.onerror = function() { setOverlay('❌','Failed to load AI library. Check internet and reload.', 100,'#f87171'); };
+  document.head.appendChild(s);
+}
+
+async function loadModels() {
+  prog('Loading AI models…', 35);
+  try {
+    var cache = null;
+    try { cache = await caches.open(MODEL_CACHE); } catch(e) {}
+    if (cache) {
+      var origFetch = window.fetch;
+      window.fetch = async function(url, opts) {
+        if (typeof url === 'string' && url.includes('face-api')) {
+          try {
+            var hit = await cache.match(url);
+            if (hit) return hit;
+            var resp = await origFetch(url, opts);
+            if (resp && resp.ok) { try { await cache.put(url, resp.clone()); } catch(e){} }
+            return resp;
+          } catch(e) { return origFetch(url, opts); }
+        }
+        return origFetch(url, opts);
+      };
+    }
+
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+      faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
+      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+    ]);
+
+    detectOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: INPUT_SIZE, scoreThreshold: MIN_SCORE });
+
+    prog('Warming up…', 75);
+    await warmUp();
+    prog('Loading face data…', 88);
+    await loadDatabase();
+
+    if (skipToChecklist) {
+      // Go directly to checklist
+      prog('Done! Loading checklist…', 100);
+      setTimeout(function() {
+        showChecklistScreen();
+      }, 400);
+    } else {
+      // Show attendance screen
+      prog('Ready!', 100);
+      setTimeout(function() {
+        document.getElementById('cam-overlay').classList.add('hidden');
+        document.getElementById('oval').style.display = 'block';
+        showScreen('scr-attend');
+      }, 350);
+    }
+  } catch(err) {
+    prog('❌ Error: ' + err.message, 100);
+    setOverlay('❌', err.message + '\n\nReload the page.', 100, '#f87171');
+  }
+}
+
+async function warmUp() {
+  var canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 128;
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#666'; ctx.fillRect(0,0,128,128);
+  try { await faceapi.detectSingleFace(canvas, detectOpts); } catch(e) {}
+}
+
+function prog(msg, pct) {
+  var m = document.getElementById('ld-msg');
+  var f = document.getElementById('ld-fill');
+  var co = document.getElementById('co-msg');
+  var cb = document.getElementById('co-bar');
+  if (m) m.textContent = msg;
+  if (f) f.style.width = pct + '%';
+  if (co) co.textContent = msg;
+  if (cb) cb.style.width = pct + '%';
+}
+
+function setOverlay(icon, msg, pct, barColor) {
+  document.getElementById('co-icon').textContent = icon;
+  document.getElementById('co-msg').innerHTML = msg.replace(/\n/g,'<br>');
+  document.getElementById('co-bar').style.width = (pct||100) + '%';
+  if (barColor) document.getElementById('co-bar').style.background = barColor;
+}
+
+// ════════════════════════════════════
+//  LOAD FACE DATABASE FROM GAS
+// ════════════════════════════════════
+async function loadDatabase() {
+  try {
+    var res = await api('getUsers', {});
+    if (res.error) { setStatus(res.error, 'red'); return; }
+    if (!res.users || res.users.length === 0) {
+      setStatus('No face registered yet — go to Admin → Register Face', 'amber');
+      isReady = false;
+      return;
+    }
+    var labeled = res.users.map(function(u) {
+      var raw = JSON.parse(u.descriptor);
+      var descriptors = Array.isArray(raw[0])
+        ? raw.map(function(d) { return new Float32Array(d); })
+        : [new Float32Array(raw)];
+      return new faceapi.LabeledFaceDescriptors(u.label, descriptors);
+    });
+    faceMatcher = new faceapi.FaceMatcher(labeled, THRESHOLD);
+    isReady = true;
+    setStatus('Ready to punch — face the camera & tap!', 'green');
+
+    var regCard = document.getElementById('reg-status-msg');
+    if (regCard) regCard.textContent = '✅ ' + res.users[0].label + ' is registered. Tap below to re-register if needed.';
+
+  } catch(e) {
+    setStatus('Could not load face data — check GAS URL', 'amber');
+  }
+}
+
+// ════════════════════════════════════
+//  CAPTURE & MATCH
+// ════════════════════════════════════
+async function captureFrames(vid, needed) {
+  var descriptors = [], maxAttempts = needed * 2;
+  for (var attempt = 0; attempt < maxAttempts && descriptors.length < needed; attempt++) {
+    try {
+      var det = await faceapi.detectSingleFace(vid, detectOpts).withFaceLandmarks(true).withFaceDescriptor();
+      if (det && det.detection.score >= MIN_SCORE) {
+        var box = det.detection.box;
+        var fw = vid.videoWidth || 320, fh = vid.videoHeight || 240;
+        if ((box.width * box.height) / (fw * fh) >= MIN_FACE_RATIO) {
+          descriptors.push(det.descriptor);
+        }
+      }
+    } catch(e) {}
+    if (descriptors.length < needed && attempt < maxAttempts - 1) await sleep(FRAME_GAP_MS);
+  }
+  return descriptors.length >= needed ? descriptors : null;
+}
+
+function votingMatch(descs) {
+  var votes = {};
+  descs.forEach(function(d) {
+    var m = faceMatcher.findBestMatch(d), lbl = m.label;
+    if (!votes[lbl]) votes[lbl] = { count:0, totalDist:0 };
+    votes[lbl].count++; votes[lbl].totalDist += m.distance;
+  });
+  var bestLabel = null, bestCount = 0, bestAvg = Infinity;
+  Object.keys(votes).forEach(function(lbl) {
+    var v = votes[lbl], avg = v.totalDist / v.count;
+    if (v.count > bestCount || (v.count === bestCount && avg < bestAvg)) {
+      bestLabel = lbl; bestCount = v.count; bestAvg = avg;
+    }
+  });
+  if (!bestLabel || bestCount / descs.length < 0.5 || bestLabel === 'unknown') return null;
+  return { label: bestLabel, avgDistance: bestAvg };
+}
+
+function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+// ════════════════════════════════════
+//  PUNCH IN / OUT
+// ════════════════════════════════════
+document.getElementById('btn-punch').addEventListener('click', async function() {
+  if (!isReady || isBusy) {
+    if (!isReady) showAttAlert('⏳ Still loading — please wait.', 'info');
+    return;
+  }
+  isBusy = true;
+  document.getElementById('btn-punch').disabled = true;
+  document.getElementById('btn-punch').textContent = '🔍 ਸਕੈਨ ਹੋ ਰਿਹਾ ਹੈ… hold still';
+  showAttAlert('⏳ Scanning face…', 'info');
+
+  var vid = document.getElementById('video');
+  var frames = await captureFrames(vid, DETECT_FRAMES);
+  if (!frames) {
+    isBusy = false; document.getElementById('btn-punch').disabled = false;
+    document.getElementById('btn-punch').textContent = '📷 ਹਾਜ਼ਰੀ ਦਰਜ ਕਰੋ — Mark Attendance';
+    showAttAlert('❌ No face detected. Move closer and ensure good lighting.', 'error');
+    return;
+  }
+
+  var result = votingMatch(frames);
+  if (!result) {
+    isBusy = false; document.getElementById('btn-punch').disabled = false;
+    document.getElementById('btn-punch').textContent = '📷 ਹਾਜ਼ਰੀ ਦਰਜ ਕਰੋ — Mark Attendance';
+    showAttAlert('❌ Face not recognised. Please try again in better light.', 'error');
+    return;
+  }
+
+  showAttAlert('⏳ Saving attendance…', 'info');
+  var gps = null;
+  if (navigator.geolocation) {
+    try {
+      var pos = await new Promise(function(res, rej) {
+        navigator.geolocation.getCurrentPosition(res, rej, {timeout:5000});
+      });
+      gps = {lat: pos.coords.latitude, lng: pos.coords.longitude};
+    } catch(e) {}
+  }
+
+  var res = await api('recordAttendance', { name: result.label, gps: gps });
+  isBusy = false; document.getElementById('btn-punch').disabled = false;
+  document.getElementById('btn-punch').textContent = '📷 ਹਾਜ਼ਰੀ ਦਰਜ ਕਰੋ — Mark Attendance';
+
+  if (res.error) { showAttAlert('⚠️ ' + res.error, 'warning'); return; }
+
+  if (res.type === 'IN') {
+    // Save to localStorage — she won't need to scan again today
+    localStorage.setItem(PUNCH_KEY(), res.time);
+    punchInTime = res.time;
+    document.getElementById('cl-punch-time').textContent = res.time;
+    showSuccessFlash('IN', res.name, res.time, res.date, '');
+  } else {
+    showSuccessFlash('OUT', res.name, res.time, res.date, res.workingHours);
+  }
+});
+
+// ════════════════════════════════════
+//  SUCCESS FLASH
+// ════════════════════════════════════
+var successGoToChecklist = false;
+function showSuccessFlash(type, name, time, date, hours) {
+  successGoToChecklist = (type === 'IN');
+  var isIN = type === 'IN';
+  document.getElementById('sf-icon').textContent = isIN ? '🟢' : '🔴';
+  var badge = document.getElementById('sf-badge');
+  badge.textContent = isIN ? 'PUNCHED IN ✅' : 'PUNCHED OUT 🔴';
+  badge.className = 'sf-badge ' + (isIN ? 'in' : 'out');
+  document.getElementById('sf-name').textContent = name;
+  document.getElementById('sf-time').textContent = '🕐 ' + time + '   📅 ' + date;
+  var hoursEl = document.getElementById('sf-hours');
+  if (!isIN && hours) { hoursEl.textContent = '⏱ ਕੁੱਲ ਕੰਮ ਦਾ ਸਮਾਂ: ' + hours; hoursEl.style.display = 'block'; }
+  else { hoursEl.style.display = 'none'; }
+  document.getElementById('success-flash').classList.add('show');
+}
+function closeSuccess() {
+  document.getElementById('success-flash').classList.remove('show');
+  if (successGoToChecklist) showChecklistScreen();
+}
+
+// ════════════════════════════════════
+//  CHECKLIST SCREEN
+// ════════════════════════════════════
+function showChecklistScreen() {
+  renderDailyTasks();
+  renderWeeklyTasks();
+  renderMonthlyTasks();
+  updateProgress();
+  showScreen('scr-checklist');
+  document.getElementById('bottom-nav').classList.remove('hidden');
+  document.getElementById('nav-checklist').classList.add('active');
+  document.getElementById('nav-admin').classList.remove('active');
+}
+
+function getCompletedTasks() {
+  try { return JSON.parse(localStorage.getItem(TASKS_KEY()) || '{}'); } catch(e) { return {}; }
+}
+function saveCompletedTasks(obj) {
+  localStorage.setItem(TASKS_KEY(), JSON.stringify(obj));
+}
+
+function toggleTask(taskId) {
+  var done = getCompletedTasks();
+  if (done[taskId]) {
+    delete done[taskId];
+  } else {
+    done[taskId] = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  }
+  saveCompletedTasks(done);
+
+  // Update DOM
+  var item = document.getElementById('ti-' + taskId);
+  var check = document.getElementById('tc-' + taskId);
+  if (item && check) {
+    if (done[taskId]) {
+      item.classList.add('done'); check.textContent = '✓';
+    } else {
+      item.classList.remove('done'); check.textContent = '';
+    }
+  }
+
+  updateProgress();
+
+  // Async sync to GAS (fire and forget)
+  api('saveTaskCompletion', { taskId: taskId, completed: !!done[taskId], time: done[taskId] || '' });
+}
+
+function makeTaskItem(task, done) {
+  var isDone = !!done[task.id];
+  return '<div class="task-item' + (isDone ? ' done' : '') + '" id="ti-' + task.id + '" onclick="toggleTask(\'' + task.id + '\')">'
+    + '<div class="task-emoji">' + task.emoji + '</div>'
+    + '<div class="task-body">'
+    + '<div class="task-en">' + task.en + '</div>'
+    + '<div class="task-pa">' + task.pa + '</div>'
+    + '</div>'
+    + '<div class="task-check" id="tc-' + task.id + '">' + (isDone ? '✓' : '') + '</div>'
+    + '</div>';
+}
+
+function renderDailyTasks() {
+  var done = getCompletedTasks();
+  var html = DAILY_TASKS.map(function(t) { return makeTaskItem(t, done); }).join('');
+  document.getElementById('daily-tasks-list').innerHTML = html;
+}
+
+function renderWeeklyTasks() {
+  var done = getCompletedTasks();
+  var today = new Date().getDay(); // 0–6
+  var html = '';
+
+  // Group tasks by day
+  var dayGroups = {};
+  WEEKLY_TASKS.forEach(function(t) {
+    if (!dayGroups[t.day]) dayGroups[t.day] = [];
+    dayGroups[t.day].push(t);
+  });
+
+  // Show today's tasks first, then rest of week
+  var dayOrder = [];
+  for (var i = 0; i < 7; i++) {
+    var d = (today + i) % 7;
+    if (dayGroups[d]) dayOrder.push(d);
+  }
+
+  dayOrder.forEach(function(day) {
+    var isToday = day === today;
+    var dayLabel = DAY_NAMES_PA[day];
+    html += '<div class="weekly-day-header' + (isToday ? ' today-hl' : '') + '">'
+      + dayLabel + (isToday ? ' <span class="today-tag">TODAY</span>' : '') + '</div>';
+    dayGroups[day].forEach(function(t) { html += makeTaskItem(t, done); });
+  });
+
+  document.getElementById('weekly-tasks-list').innerHTML = html;
+}
+
+function renderMonthlyTasks() {
+  var done = getCompletedTasks();
+  var today = new Date();
+  var weekOfMonth = Math.ceil(today.getDate() / 7);
+  var html = '';
+
+  [1,2,3,4].forEach(function(w) {
+    var tasks = MONTHLY_TASKS.filter(function(t) { return t.week === w; });
+    if (!tasks.length) return;
+    var isCurrentWeek = w === weekOfMonth;
+    html += '<div class="weekly-day-header' + (isCurrentWeek ? ' today-hl' : '') + '">'
+      + 'Week ' + w + ' — ਹਫ਼ਤਾ ' + w + (isCurrentWeek ? ' <span class="today-tag">THIS WEEK</span>' : '') + '</div>';
+    tasks.forEach(function(t) { html += makeTaskItem(t, done); });
+  });
+
+  document.getElementById('monthly-tasks-list').innerHTML = html;
+}
+
+function updateProgress() {
+  var done = getCompletedTasks();
+  var today = new Date().getDay();
+  var weekOfMonth = Math.ceil(new Date().getDate() / 7);
+
+  var allTasks = [].concat(
+    DAILY_TASKS,
+    WEEKLY_TASKS.filter(function(t) { return t.day === today; }),
+    MONTHLY_TASKS.filter(function(t) { return t.week === weekOfMonth; })
+  );
+
+  var total = allTasks.length;
+  var doneCount = allTasks.filter(function(t) { return !!done[t.id]; }).length;
+  var pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+
+  document.getElementById('cl-prog-fill').style.width = pct + '%';
+  document.getElementById('cl-prog-label').textContent = doneCount + ' of ' + total + ' tasks done today — ' + pct + '%';
+}
+
+function switchTab(tab) {
+  ['daily','weekly','monthly'].forEach(function(t) {
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('tc-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+// ════════════════════════════════════
+//  ADMIN SCREEN
+// ════════════════════════════════════
+function showAdminScreen() {
+  showScreen('scr-admin');
+  document.getElementById('nav-checklist').classList.remove('active');
+  document.getElementById('nav-admin').classList.add('active');
+}
+function backFromAdmin() {
+  if (localStorage.getItem(PUNCH_KEY())) {
+    showChecklistScreen();
+  } else {
+    showScreen('scr-attend');
+    document.getElementById('bottom-nav').classList.add('hidden');
+  }
+}
+function navTo(dest) {
+  if (dest === 'checklist') showChecklistScreen();
+  else if (dest === 'admin') showAdminScreen();
+}
+
+// Registration
+var isRegistering = false;
+async function startRegistration() {
+  var name = document.getElementById('reg-name').value.trim();
+  if (!name) { showAlert('reg-alert','⚠️ Enter a name.','error'); return; }
+  if (isRegistering || isBusy) return;
+  isRegistering = true; isBusy = true;
+
+  if (!cameraStarted) startCamera();
+  document.getElementById('reg-cam-wrap').style.display = 'block';
+  document.getElementById('btn-register').disabled = true;
+  document.getElementById('btn-register').textContent = '📸 Capturing face samples…';
+  showAlert('reg-alert','⏳ Face the camera and hold still…','info');
+
+  var vid = document.getElementById('video');
+  // small delay to let video2 render
+  await sleep(400);
+
+  var frames = await captureFrames(vid, REG_FRAMES);
+  isRegistering = false; isBusy = false;
+  document.getElementById('btn-register').disabled = false;
+  document.getElementById('btn-register').textContent = '📸 Scan & Register Face';
+
+  if (!frames) {
+    showAlert('reg-alert','❌ Could not detect face clearly. Move closer & improve lighting.','error');
+    return;
+  }
+
+  showAlert('reg-alert','⏳ Saving face to sheet…','info');
+  var payload = JSON.stringify(frames.map(function(d) { return Array.from(d); }));
+  var res = await api('registerUser', { name: name, descriptor: payload });
+
+  if (res.success) {
+    document.getElementById('reg-cam-wrap').style.display = 'none';
+    showAlert('reg-alert','✅ ' + name + ' registered successfully!','success');
+    await loadDatabase();
+  } else {
+    showAlert('reg-alert','⚠️ ' + res.message,'error');
+  }
+}
+
+async function manualPunchIn() {
+  var time = fmtTime();
+  localStorage.setItem(PUNCH_KEY(), time);
+  punchInTime = time;
+  document.getElementById('cl-punch-time').textContent = time;
+  var res = await api('recordAttendance', { name: DIDI_NAME, gps: null, force: 'IN' });
+  showAlert('manual-alert', res.error ? '⚠️ ' + res.error : '✅ Punched IN at ' + time, res.error ? 'warning' : 'success');
+}
+
+async function adminPunchOut() {
+  var res = await api('recordAttendance', { name: DIDI_NAME, gps: null, force: 'OUT' });
+  showAlert('manual-alert', res.error ? '⚠️ ' + res.error : '✅ Punched OUT. Hours: ' + (res.workingHours || '—'), res.error ? 'warning' : 'success');
+}
+
+async function loadAdminReport() {
+  var res = await api('getDailyReport', {});
+  var html = '';
+  if (res.error) { html = '<div style="color:red;font-size:0.82rem;">' + res.error + '</div>'; }
+  else if (!res.staff || !res.staff.length) { html = '<div style="color:#888;font-size:0.82rem;">No records today.</div>'; }
+  else {
+    res.staff.forEach(function(s) {
+      html += '<div class="rpt-row"><div><div class="rpt-name">' + s.name + '</div>'
+        + '<div class="rpt-time">'
+        + '<span class="badge badge-in">IN ' + (s.inTime||'—') + '</span> '
+        + (s.outTime ? '<span class="badge badge-out">OUT ' + s.outTime + '</span>' : '<span style="color:#888;font-size:0.72rem;">Still In</span>')
+        + (s.workingHours ? ' &nbsp;⏱ ' + s.workingHours : '')
+        + '</div></div></div>';
+    });
+  }
+  document.getElementById('admin-report-content').innerHTML = html;
+}
+
+async function runSheetSetup() {
+  showAlert('setup-alert','⏳ Setting up sheets…','info');
+  var res = await api('setupSheets', {});
+  showAlert('setup-alert', res.error ? '❌ ' + res.error : '✅ ' + (res.message || 'Sheets created successfully!'), res.error ? 'error' : 'success');
+}
+
+// ════════════════════════════════════
+//  SCREEN & UI HELPERS
+// ════════════════════════════════════
+function showScreen(id) {
+  currentScreen = id;
+  var screens = ['scr-load','scr-attend','scr-checklist','scr-admin'];
+  screens.forEach(function(s) {
+    document.getElementById(s).classList.toggle('active', s === id);
+  });
+}
+
+function setStatus(msg, color) {
+  var dot = document.getElementById('sdot');
+  var txt = document.getElementById('stext');
+  if (dot) dot.className = 'dot ' + color;
+  if (txt) txt.textContent = msg;
+  if (isReady) {
+    var btn = document.getElementById('btn-punch');
+    if (btn) btn.disabled = false;
+  }
+}
+
+function showAttAlert(msg, type) {
+  var el = document.getElementById('att-alert');
+  el.textContent = msg; el.className = 'alert ' + type + ' show';
+  if (type !== 'info') setTimeout(function() { el.classList.remove('show'); }, 4000);
+}
+
+function showAlert(id, msg, type) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg; el.className = 'alert ' + type + ' show';
+  if (type !== 'info') setTimeout(function() { el.classList.remove('show'); }, 5000);
+}
+
+// ════════════════════════════════════
+//  GAS API HELPER
+// ════════════════════════════════════
+async function api(action, payload) {
+  try {
+    var res = await fetch(GAS_URL + '?action=' + action, {
+      method: 'POST', mode: 'cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  } catch(e) {
+    return { error: 'Network error: ' + e.message };
+  }
+}
+</script>
+</body>
+</html>
