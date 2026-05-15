@@ -419,15 +419,7 @@
       </div>
     </div>
 
-    <!-- Manual Attendance -->
-    <div class="admin-section">
-      <div class="admin-section-title">Manual Attendance</div>
-      <div class="admin-card">
-        <button class="btn-admin outline" onclick="manualPunchIn()">✅ Force Punch In (Today)</button>
-        <button class="btn-admin outline" onclick="adminPunchOut()">🔴 Record Punch Out</button>
-        <div class="alert" id="manual-alert"></div>
-      </div>
-    </div>
+    <!-- ══ MANUAL ATTENDANCE (Punch IN/OUT) REMOVED ══ -->
 
     <!-- Manage Tasks -->
     <div class="admin-section">
@@ -449,15 +441,7 @@
       </div>
     </div>
 
-    <!-- Sheet Setup -->
-    <div class="admin-section">
-      <div class="admin-section-title">Sheet Setup (Run Once)</div>
-      <div class="admin-card">
-        <div class="reg-info">Creates all required sheets (Tasks, Users, Logs, ChecklistLogs, DailyReport) with correct headers.</div>
-        <button class="btn-admin outline" onclick="runSheetSetup()">🔧 Setup Google Sheets</button>
-        <div class="alert" id="setup-alert"></div>
-      </div>
-    </div>
+    <!-- ══ SHEET SETUP REMOVED ══ -->
 
   </div>
 </div>
@@ -609,10 +593,9 @@ function showAdminDashboard() {
   document.getElementById('adm-date').textContent = fmtDate();
   showScreen('scr-admin');
   document.getElementById('admin-bottom-nav').classList.remove('hidden');
-  // Auto-load today's stats
   loadAdminStats();
   loadRegStatus();
-  startCamera(); // for face registration
+  startCamera();
 }
 
 async function loadAdminStats() {
@@ -622,7 +605,6 @@ async function loadAdminStats() {
     document.getElementById('st-in').textContent  = didi && didi.inTime  ? didi.inTime  : '—';
     document.getElementById('st-out').textContent = didi && didi.outTime ? didi.outTime : '—';
   }
-  // Task count
   var tk = await api('getTaskStatus', {});
   if (tk.success) {
     var cnt = Object.keys(tk.completed).length;
@@ -638,7 +620,6 @@ async function loadAdminChecklist() {
     el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;">Could not load tasks.</div>';
     return;
   }
-
   var done = res.success ? res.completed : {};
   var allTasks = tasksRes.tasks;
   var today = new Date().getDay();
@@ -649,15 +630,12 @@ async function loadAdminChecklist() {
     if (t.type === 'M') return parseInt(t.week) === weekNum;
     return false;
   });
-
   var totalDone = relevantTasks.filter(function(t) { return done[t.id]; }).length;
   var pct = relevantTasks.length > 0 ? Math.round((totalDone / relevantTasks.length) * 100) : 0;
-
   var html = '<div style="margin-bottom:10px;font-size:0.8rem;font-weight:700;color:var(--muted);">'
     + totalDone + ' / ' + relevantTasks.length + ' tasks done today (' + pct + '%)</div>'
     + '<div style="background:var(--border);border-radius:10px;height:8px;overflow:hidden;margin-bottom:14px;">'
     + '<div style="background:var(--green-btn);height:100%;border-radius:10px;width:' + pct + '%;transition:width 0.4s;"></div></div>';
-
   html += '<table class="task-table"><thead><tr><th>Task</th><th>Status</th><th>Time</th></tr></thead><tbody>';
   relevantTasks.forEach(function(t) {
     var isDone = !!done[t.id];
@@ -695,7 +673,6 @@ function adminNavTo(dest) {
     var el = document.getElementById('anav-' + d);
     if (el) el.classList.toggle('active', d === dest);
   });
-  // All admin sections visible on same screen — just scroll to relevant
 }
 
 // ════════════════════════════════════════════════════════
@@ -868,7 +845,6 @@ async function loadTasksFromSheet() {
       TASKS.monthly = res.tasks.filter(function(t) { return t.type === 'M'; });
     }
   } catch(e) {
-    // fallback to empty
     TASKS = { daily: [], weekly: [], monthly: [] };
   }
 }
@@ -947,7 +923,6 @@ document.getElementById('btn-punch').addEventListener('click', async function() 
     localStorage.setItem(PUNCH_KEY(), res.time);
     punchInTime = res.time;
     document.getElementById('cl-punch-time').textContent = res.time;
-    // Load tasks from sheet before showing checklist
     await loadTasksFromSheet();
     showSuccessFlash('IN', res.name, res.time, res.date, '');
   } else {
@@ -957,6 +932,9 @@ document.getElementById('btn-punch').addEventListener('click', async function() 
 
 // ════════════════════════════════════════════════════════
 //  PUNCH OUT (from checklist screen)
+//  ── KEY CHANGE: when server returns refreshTasks:true,
+//     reload tasks from sheet and re-render all three lists
+//     before showing the success flash.
 // ════════════════════════════════════════════════════════
 async function didiPunchOut() {
   if (isBusy) return;
@@ -976,9 +954,23 @@ async function didiPunchOut() {
   isBusy = false; btn.disabled = false; btn.textContent = '🔴 Punch Out — ਜਾਣਾ ਹੈ';
 
   if (res.error) { alert('⚠️ ' + res.error); return; }
+
+  // ── Refresh tasks from sheet on punch-out ─────────────
+  if (res.refreshTasks) {
+    btn.textContent = '⏳ Refreshing tasks…';
+    btn.disabled = true;
+    await loadTasksFromSheet();
+    renderDailyTasks();
+    renderWeeklyTasks();
+    renderMonthlyTasks();
+    updateProgress();
+    btn.textContent = '🔴 Punch Out — ਜਾਣਾ ਹੈ';
+    btn.disabled = false;
+  }
+
   localStorage.removeItem(PUNCH_KEY());
+  successGoToChecklist = false; // After OUT, return to role screen
   showSuccessFlash('OUT', res.name, res.time, res.date, res.workingHours);
-  successGoToChecklist = false; // After OUT, go back to role screen
 }
 
 // ════════════════════════════════════════════════════════
@@ -1003,7 +995,6 @@ function closeSuccess() {
   if (successGoToChecklist) {
     showChecklistScreen();
   } else {
-    // After punch out, go back to role selector
     document.getElementById('bottom-nav').classList.add('hidden');
     showScreen('scr-role');
   }
@@ -1041,7 +1032,6 @@ function toggleTask(taskId) {
     check.textContent = wasChecked ? '' : '✓';
   }
   updateProgress();
-  // Sync to sheet
   api('saveTaskCompletion', { taskId: taskId, completed: !wasChecked, time: done[taskId] || '' });
 }
 
@@ -1170,22 +1160,6 @@ async function startRegistration() {
   }
 }
 
-async function manualPunchIn() {
-  var time = fmtTime();
-  localStorage.setItem(PUNCH_KEY(), time);
-  punchInTime = time;
-  document.getElementById('cl-punch-time').textContent = time;
-  var res = await api('recordAttendance', { name: DIDI_NAME, gps: null, force: 'IN' });
-  showAlert('manual-alert', res.error ? '⚠️ ' + res.error : '✅ Punched IN at ' + time, res.error ? 'warning' : 'success');
-  loadAdminStats();
-}
-
-async function adminPunchOut() {
-  var res = await api('recordAttendance', { name: DIDI_NAME, gps: null, force: 'OUT' });
-  showAlert('manual-alert', res.error ? '⚠️ ' + res.error : '✅ Punched OUT. Hours: ' + (res.workingHours||'—'), res.error ? 'warning' : 'success');
-  loadAdminStats();
-}
-
 async function loadAdminReport() {
   var res = await api('getDailyReport', {});
   var html = '';
@@ -1198,12 +1172,6 @@ async function loadAdminReport() {
       + (s.workingHours ? ' &nbsp;⏱ ' + s.workingHours : '') + '</div></div></div>';
   });
   document.getElementById('admin-report-content').innerHTML = html;
-}
-
-async function runSheetSetup() {
-  showAlert('setup-alert','⏳ Setting up sheets…','info');
-  var res = await api('setupSheets', {});
-  showAlert('setup-alert', res.error ? '❌ ' + res.error : '✅ ' + (res.message||'Done!'), res.error ? 'error' : 'success');
 }
 
 // ════════════════════════════════════════════════════════
