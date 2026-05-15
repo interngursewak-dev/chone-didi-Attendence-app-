@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Didi App">
   <title>Didi — ਹਾਜ਼ਰੀ ਅਤੇ ਚੈੱਕਲਿਸਟ</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,16 +18,39 @@
       --radius: 12px; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
     html, body { min-height: 100%; background: var(--grey); font-family: 'Segoe UI', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: var(--black); }
-
-    /* ── SCREENS ── */
     .screen { display: none; min-height: 100vh; flex-direction: column; align-items: center; }
     .screen.active { display: flex; }
 
-    /* ══════════ LOADING SCREEN ══════════ */
-    #scr-load {
-      justify-content: center; align-items: center; padding: 32px 20px;
-      background: linear-gradient(135deg, var(--pri-dark) 0%, var(--pri) 100%);
-    }
+    /* ── ROLE SELECTOR ── */
+    #scr-role { background: linear-gradient(135deg, var(--pri-dark), var(--pri)); justify-content: center; padding: 40px 24px; }
+    .role-logo { font-size: 3rem; margin-bottom: 12px; animation: pulse 2s infinite; }
+    .role-title { color: #fff; font-size: 1.6rem; font-weight: 800; text-align: center; margin-bottom: 4px; }
+    .role-sub { color: rgba(255,255,255,0.7); font-size: 0.85rem; text-align: center; margin-bottom: 40px; }
+    .role-card { background: rgba(255,255,255,0.12); border-radius: 20px; padding: 28px; width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 16px; }
+    .role-btn { display: flex; align-items: center; gap: 16px; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3); border-radius: var(--radius); padding: 18px 20px; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+    .role-btn:hover, .role-btn:active { background: rgba(255,255,255,0.25); transform: scale(0.98); }
+    .role-btn-icon { font-size: 2rem; }
+    .role-btn-text { text-align: left; }
+    .role-btn-label { color: #fff; font-size: 1rem; font-weight: 800; }
+    .role-btn-desc { color: rgba(255,255,255,0.7); font-size: 0.75rem; margin-top: 2px; }
+
+    /* ── ADMIN PASSWORD ── */
+    #scr-adminpw { background: linear-gradient(135deg, #1e293b, #334155); justify-content: center; padding: 40px 24px; }
+    .pw-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 32px 24px; width: 100%; max-width: 340px; text-align: center; }
+    .pw-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .pw-title { color: #fff; font-size: 1.2rem; font-weight: 800; margin-bottom: 6px; }
+    .pw-sub { color: rgba(255,255,255,0.6); font-size: 0.8rem; margin-bottom: 24px; }
+    .pw-dots { display: flex; justify-content: center; gap: 14px; margin-bottom: 24px; }
+    .pw-dot { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,0.4); transition: all 0.2s; }
+    .pw-dot.filled { background: #fff; border-color: #fff; }
+    .pw-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 240px; margin: 0 auto 16px; }
+    .pw-key { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 16px; color: #fff; font-size: 1.2rem; font-weight: 700; cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent; user-select: none; }
+    .pw-key:active { background: rgba(255,255,255,0.3); transform: scale(0.93); }
+    .pw-err { color: #f87171; font-size: 0.8rem; min-height: 20px; margin-top: 4px; }
+    .pw-back-link { color: rgba(255,255,255,0.5); font-size: 0.78rem; cursor: pointer; margin-top: 12px; display: inline-block; }
+
+    /* ── LOADING ── */
+    #scr-load { background: linear-gradient(135deg, var(--pri-dark), var(--pri)); justify-content: center; padding: 32px 20px; }
     .load-logo { font-size: 3.5rem; margin-bottom: 16px; animation: pulse 2s infinite; }
     .load-title { color: #fff; font-size: 1.4rem; font-weight: 800; text-align: center; margin-bottom: 4px; }
     .load-sub { color: rgba(255,255,255,0.7); font-size: 0.85rem; text-align: center; margin-bottom: 32px; }
@@ -38,7 +60,7 @@
     .load-fill { height: 100%; width: 0%; background: #fff; border-radius: 10px; transition: width 0.5s ease; }
     @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 
-    /* ══════════ ATTENDANCE SCREEN ══════════ */
+    /* ── ATTENDANCE ── */
     #scr-attend { background: var(--grey); padding: 0 0 80px; }
     .attend-header { width: 100%; background: linear-gradient(135deg, var(--pri-dark), var(--pri)); padding: 20px 20px 28px; }
     .attend-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
@@ -46,8 +68,7 @@
     .attend-logo-text { color: #fff; font-size: 1.1rem; font-weight: 800; }
     .attend-date { color: rgba(255,255,255,0.8); font-size: 0.82rem; }
     .attend-clock { color: #fff; font-size: 1.6rem; font-weight: 700; letter-spacing: 1px; }
-
-    .cam-card { width: 100%; max-width: 400px; margin: -16px auto 0; background: var(--white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+    .cam-card { width: 100%; max-width: 480px; align-self: center; margin: -16px 0 0; background: var(--white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
     .cam-wrap { position: relative; width: 100%; padding-bottom: 70%; background: #000; overflow: hidden; }
     #video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
     .face-oval { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: 175px; border: 2.5px dashed rgba(255,255,255,0.85); border-radius: 50%; pointer-events: none; box-shadow: 0 0 0 1000px rgba(0,0,0,0.35); display: none; }
@@ -57,7 +78,6 @@
     .cam-overlay-msg { color: #fff; font-size: 0.85rem; font-weight: 600; text-align: center; padding: 0 24px; line-height: 1.6; }
     .cam-bar-wrap { width: 80%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 10px; overflow: hidden; }
     .cam-bar-fill { height: 100%; width: 0%; background: #fff; border-radius: 10px; transition: width 0.5s; }
-
     .attend-panel { padding: 16px 16px 20px; }
     .sbar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--grey); border-radius: 8px; margin-bottom: 14px; }
     .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -66,15 +86,9 @@
     .dot.red   { background: #ef4444; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
     .sbar-text { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
-
-    .btn-punch { display: block; width: 100%; padding: 18px; border: none; border-radius: var(--radius); font-size: 1.05rem; font-weight: 800; cursor: pointer; text-align: center; background: var(--pri); color: #fff; margin-bottom: 10px; transition: all 0.2s; letter-spacing: 0.3px; -webkit-tap-highlight-color: transparent; }
+    .btn-punch { display: block; width: 100%; padding: 18px; border: none; border-radius: var(--radius); font-size: 1.05rem; font-weight: 800; cursor: pointer; text-align: center; background: var(--pri); color: #fff; margin-bottom: 10px; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
     .btn-punch:disabled { background: #94a3b8; cursor: not-allowed; }
     .btn-punch:active:not(:disabled) { transform: scale(0.97); }
-
-    .btn-sec { display: block; width: 100%; padding: 13px; border: 2px solid var(--border); border-radius: var(--radius); font-size: 0.88rem; font-weight: 700; cursor: pointer; text-align: center; background: var(--white); color: var(--black); margin-bottom: 10px; transition: transform 0.1s; -webkit-tap-highlight-color: transparent; }
-    .btn-sec:active { transform: scale(0.97); }
-    .btn-sec:last-child { margin-bottom: 0; }
-
     .alert { padding: 11px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; margin-top: 12px; line-height: 1.5; display: none; }
     .alert.show { display: block; }
     .alert.success { background: var(--green-bg); color: var(--green); }
@@ -82,7 +96,7 @@
     .alert.info    { background: var(--blue-bg);  color: var(--blue); }
     .alert.warning { background: var(--amber-bg); color: var(--amber); }
 
-    /* ══════════ CHECKLIST SCREEN ══════════ */
+    /* ── CHECKLIST ── */
     #scr-checklist { background: var(--grey); padding-bottom: 80px; }
     .cl-header { width: 100%; background: linear-gradient(135deg, var(--pri-dark), var(--pri)); padding: 20px 20px 32px; }
     .cl-header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
@@ -93,18 +107,16 @@
     .cl-progress-wrap { background: rgba(255,255,255,0.2); border-radius: 10px; height: 8px; overflow: hidden; margin-bottom: 6px; }
     .cl-progress-fill { height: 100%; background: #fff; border-radius: 10px; transition: width 0.4s ease; }
     .cl-progress-label { color: rgba(255,255,255,0.85); font-size: 0.75rem; font-weight: 600; }
+    .btn-punchout { display: block; width: calc(100% - 28px); margin: 12px 14px 0; padding: 13px; border: none; border-radius: var(--radius); font-size: 0.9rem; font-weight: 800; cursor: pointer; text-align: center; background: var(--red-btn); color: #fff; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+    .btn-punchout:active { transform: scale(0.97); }
 
     /* Tabs */
     .tabs { display: flex; width: 100%; max-width: 480px; align-self: center; background: var(--white); border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 10; }
     .tab { flex: 1; padding: 13px 8px; font-size: 0.8rem; font-weight: 700; text-align: center; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
     .tab.active { color: var(--pri); border-bottom-color: var(--pri); }
-
-    /* Task list */
     .tab-content { display: none; width: 100%; max-width: 480px; align-self: center; padding: 14px 14px 0; }
     .tab-content.active { display: block; }
     .task-section-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 14px 0 8px; }
-    .task-section-label:first-child { margin-top: 0; }
-
     .task-item { display: flex; align-items: flex-start; gap: 12px; background: var(--white); border-radius: 10px; padding: 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: all 0.2s; cursor: pointer; -webkit-tap-highlight-color: transparent; border: 2px solid transparent; }
     .task-item.done { background: #f0fdf4; border-color: #bbf7d0; }
     .task-item:active { transform: scale(0.98); }
@@ -115,23 +127,20 @@
     .task-item.done .task-en { text-decoration: line-through; color: var(--muted); }
     .task-check { width: 24px; height: 24px; border-radius: 50%; border: 2.5px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; transition: all 0.2s; font-size: 0.75rem; }
     .task-item.done .task-check { background: var(--green-btn); border-color: var(--green-btn); color: #fff; }
-
     .weekly-day-header { background: var(--pri-light); color: var(--pri-dark); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 6px 12px; border-radius: 6px; margin: 16px 0 8px; display: flex; align-items: center; gap: 6px; }
     .weekly-day-header.today-hl { background: var(--pri); color: #fff; }
     .today-tag { font-size: 0.65rem; background: rgba(255,255,255,0.3); padding: 2px 6px; border-radius: 10px; }
-
     .note-box { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 8px; padding: 10px 12px; font-size: 0.76rem; color: #92400e; line-height: 1.5; margin: 12px 0; }
+    .loading-tasks { text-align: center; padding: 30px 20px; color: var(--muted); font-size: 0.85rem; }
 
-    .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 0.85rem; }
-    .empty-state .es-icon { font-size: 2.5rem; margin-bottom: 8px; }
-
-    /* ══════════ ADMIN SCREEN ══════════ */
+    /* ── ADMIN DASHBOARD ── */
     #scr-admin { background: var(--grey); padding: 0 0 80px; }
     .admin-header { width: 100%; background: linear-gradient(135deg, #1e293b, #334155); padding: 20px 20px 28px; }
     .admin-header-top { display: flex; align-items: center; justify-content: space-between; }
     .admin-title { color: #fff; font-size: 1.1rem; font-weight: 800; }
-    .admin-back { background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
-    .admin-body { width: 100%; max-width: 400px; align-self: center; padding: 14px; }
+    .admin-signout { background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+    .admin-date { color: rgba(255,255,255,0.7); font-size: 0.78rem; margin-top: 4px; }
+    .admin-body { width: 100%; max-width: 480px; align-self: center; padding: 14px; }
     .admin-section { margin-bottom: 20px; }
     .admin-section-title { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 10px; }
     .admin-card { background: var(--white); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
@@ -146,7 +155,16 @@
     .btn-admin.danger { background: var(--red-btn); color: #fff; }
     .btn-admin.outline { background: var(--white); color: var(--black); border: 2px solid var(--border); }
 
-    /* Report list in admin */
+    /* Stats cards */
+    .stats-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .stat-card { flex: 1; min-width: 100px; background: var(--white); border-radius: 10px; padding: 14px; box-shadow: var(--shadow); text-align: center; }
+    .stat-val { font-size: 1.6rem; font-weight: 800; }
+    .stat-label { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+    .stat-card.green .stat-val { color: var(--green); }
+    .stat-card.amber .stat-val { color: var(--amber); }
+    .stat-card.blue  .stat-val { color: var(--blue); }
+
+    /* Report */
     .rpt-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
     .rpt-row:last-child { border-bottom: none; }
     .rpt-name { font-size: 0.82rem; font-weight: 600; }
@@ -155,7 +173,19 @@
     .badge-in  { background: var(--green-bg); color: var(--green); }
     .badge-out { background: var(--red-bg);   color: var(--red); }
 
-    /* ══════════ SUCCESS FLASH ══════════ */
+    /* Task table in admin */
+    .task-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+    .task-table th { background: #f8fafc; padding: 8px 10px; text-align: left; font-weight: 700; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); border-bottom: 2px solid var(--border); }
+    .task-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .task-table tr:last-child td { border-bottom: none; }
+    .task-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; }
+    .task-badge.daily   { background: #dbeafe; color: #1e40af; }
+    .task-badge.weekly  { background: #fce7f3; color: #9d174d; }
+    .task-badge.monthly { background: #fef3c7; color: #92400e; }
+    .done-badge { background: var(--green-bg); color: var(--green); font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 20px; }
+    .pending-badge { background: #f1f5f9; color: var(--muted); font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 20px; }
+
+    /* Success flash */
     #success-flash { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; padding: 20px; }
     #success-flash.show { display: flex; }
     .sf-card { background: #fff; border-radius: 20px; padding: 36px 28px; text-align: center; width: 100%; max-width: 320px; animation: popUp 0.4s cubic-bezier(0.34,1.56,0.64,1); }
@@ -169,22 +199,86 @@
     .sf-btn { width: 100%; padding: 14px; background: var(--pri); color: #fff; border: none; border-radius: var(--radius); font-size: 0.95rem; font-weight: 700; cursor: pointer; }
     @keyframes popUp { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-    /* ══════════ BOTTOM NAV ══════════ */
+    /* Bottom Nav */
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); border-top: 2px solid var(--border); display: flex; z-index: 50; padding-bottom: env(safe-area-inset-bottom); }
-    .bottom-nav.hidden { display: none; }
+    .bottom-nav.hidden { display: none !important; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px 4px; cursor: pointer; color: var(--muted); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; gap: 4px; -webkit-tap-highlight-color: transparent; transition: color 0.2s; }
     .nav-item.active { color: var(--pri); }
     .nav-icon { font-size: 1.3rem; }
 
+    /* Admin cam */
+    .admin-cam-wrap { position: relative; width: 100%; padding-bottom: 65%; background: #000; border-radius: 10px; overflow: hidden; margin-bottom: 12px; display: none; }
+    #video2 { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    .face-oval2 { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; height: 155px; border: 2.5px dashed rgba(255,255,255,0.85); border-radius: 50%; pointer-events: none; box-shadow: 0 0 0 1000px rgba(0,0,0,0.35); }
+
     .hidden { display: none !important; }
+    textarea.finput { min-height: 80px; resize: vertical; }
   </style>
 </head>
 <body>
 
 <!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN 0: ROLE SELECTOR                        -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="scr-role" class="screen active">
+  <div class="role-logo">🏠</div>
+  <div class="role-title">Didi App</div>
+  <div class="role-sub">ਆਪਣੀ ਭੂਮਿਕਾ ਚੁਣੋ — Choose your role</div>
+  <div class="role-card">
+    <div class="role-btn" onclick="chooseDidi()">
+      <div class="role-btn-icon">👩</div>
+      <div class="role-btn-text">
+        <div class="role-btn-label">Didi 👩 — ਹਾਜ਼ਰੀ & ਚੈੱਕਲਿਸਟ</div>
+        <div class="role-btn-desc">Punch in, view tasks & tick off daily work</div>
+      </div>
+    </div>
+    <div class="role-btn" onclick="showAdminPw()">
+      <div class="role-btn-icon">⚙️</div>
+      <div class="role-btn-text">
+        <div class="role-btn-label">Admin ⚙️ — Management</div>
+        <div class="role-btn-desc">Reports, face setup, manage tasks</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN 0b: ADMIN PASSWORD                      -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="scr-adminpw" class="screen">
+  <div class="pw-card">
+    <div class="pw-icon">🔐</div>
+    <div class="pw-title">Admin Access</div>
+    <div class="pw-sub">Enter 4-digit PIN to continue</div>
+    <div class="pw-dots" id="pw-dots">
+      <div class="pw-dot" id="pwd0"></div>
+      <div class="pw-dot" id="pwd1"></div>
+      <div class="pw-dot" id="pwd2"></div>
+      <div class="pw-dot" id="pwd3"></div>
+    </div>
+    <div class="pw-keypad">
+      <div class="pw-key" onclick="pwKey('1')">1</div>
+      <div class="pw-key" onclick="pwKey('2')">2</div>
+      <div class="pw-key" onclick="pwKey('3')">3</div>
+      <div class="pw-key" onclick="pwKey('4')">4</div>
+      <div class="pw-key" onclick="pwKey('5')">5</div>
+      <div class="pw-key" onclick="pwKey('6')">6</div>
+      <div class="pw-key" onclick="pwKey('7')">7</div>
+      <div class="pw-key" onclick="pwKey('8')">8</div>
+      <div class="pw-key" onclick="pwKey('9')">9</div>
+      <div class="pw-key" onclick="pwClear()" style="font-size:1rem;">✕</div>
+      <div class="pw-key" onclick="pwKey('0')">0</div>
+      <div class="pw-key" onclick="pwBack()">⌫</div>
+    </div>
+    <div class="pw-err" id="pw-err"></div>
+    <div class="pw-back-link" onclick="showScreen('scr-role')">← Back to role selection</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
 <!--  SCREEN 1: LOADING                              -->
 <!-- ═══════════════════════════════════════════════ -->
-<div id="scr-load" class="screen active">
+<div id="scr-load" class="screen">
   <div class="load-logo">🏠</div>
   <div class="load-title">Didi ਚੈੱਕਲਿਸਟ</div>
   <div class="load-sub">Attendance + Daily Checklist</div>
@@ -195,7 +289,7 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════ -->
-<!--  SCREEN 2: ATTENDANCE (punch in)                -->
+<!--  SCREEN 2: ATTENDANCE                           -->
 <!-- ═══════════════════════════════════════════════ -->
 <div id="scr-attend" class="screen">
   <div class="attend-header">
@@ -208,18 +302,16 @@
     </div>
     <div class="attend-clock" id="att-clock">--:--</div>
   </div>
-
-  <div class="cam-card" style="width:100%;max-width:480px;align-self:center;margin:-16px 0 0;">
+  <div class="cam-card">
     <div class="cam-wrap">
       <video id="video" autoplay muted playsinline webkit-playsinline></video>
       <div class="face-oval" id="oval"></div>
       <div class="cam-overlay" id="cam-overlay">
         <div class="cam-overlay-icon" id="co-icon">🧠</div>
-        <div class="cam-overlay-msg" id="co-msg">Loading AI…<br>Please wait</div>
+        <div class="cam-overlay-msg" id="co-msg">Loading AI…</div>
         <div class="cam-bar-wrap"><div class="cam-bar-fill" id="co-bar"></div></div>
       </div>
     </div>
-
     <div class="attend-panel">
       <div class="sbar">
         <div class="dot amber" id="sdot"></div>
@@ -232,7 +324,7 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════ -->
-<!--  SCREEN 3: CHECKLIST                            -->
+<!--  SCREEN 3: CHECKLIST (DIDI)                     -->
 <!-- ═══════════════════════════════════════════════ -->
 <div id="scr-checklist" class="screen">
   <div class="cl-header">
@@ -242,15 +334,19 @@
         <div class="cl-date" id="cl-date">—</div>
       </div>
       <div style="text-align:right;">
-        <button class="cl-signout" onclick="showAdminScreen()">⚙️ Admin</button>
-        <div class="cl-date" id="cl-clock" style="margin-top:4px;color:#fff;font-weight:700;font-size:1rem;">--:--</div>
+        <div class="cl-date" id="cl-clock" style="color:#fff;font-weight:700;font-size:1rem;">--:--</div>
       </div>
     </div>
     <div class="cl-punch-badge">✅ ਪੁੱਜ ਗਏ — Punched In: <span id="cl-punch-time">--:--</span></div>
     <div class="cl-progress-wrap">
       <div class="cl-progress-fill" id="cl-prog-fill" style="width:0%"></div>
     </div>
-    <div class="cl-progress-label" id="cl-prog-label">0 of 0 tasks done</div>
+    <div class="cl-progress-label" id="cl-prog-label">Loading tasks…</div>
+  </div>
+
+  <!-- Punch out button -->
+  <div style="width:100%;max-width:480px;align-self:center;">
+    <button class="btn-punchout" id="btn-punchout" onclick="didiPunchOut()">🔴 Punch Out — ਜਾਣਾ ਹੈ</button>
   </div>
 
   <!-- Tabs -->
@@ -260,52 +356,70 @@
     <div class="tab"        id="tab-monthly" onclick="switchTab('monthly')">🗓️ ਮਹੀਨਾਵਾਰੀ<br><small>Monthly</small></div>
   </div>
 
-  <!-- Daily tab -->
   <div class="tab-content active" id="tc-daily">
     <div class="note-box">⚠️ ਗਰਮੀਆਂ: ਰੰਗਦਾਰ ਕੱਪੜੇ 2 ਘੰਟੇ ਤੋਂ ਵੱਧ ਧੁੱਪ ਵਿੱਚ ਨਾ ਛੱਡੋ — Colours FADE! &nbsp;|&nbsp; Lights OFF before leaving.</div>
-    <div id="daily-tasks-list"></div>
+    <div id="daily-tasks-list"><div class="loading-tasks">⏳ Loading tasks from sheet…</div></div>
   </div>
-
-  <!-- Weekly tab -->
   <div class="tab-content" id="tc-weekly">
-    <div id="weekly-tasks-list"></div>
+    <div id="weekly-tasks-list"><div class="loading-tasks">⏳ Loading tasks from sheet…</div></div>
   </div>
-
-  <!-- Monthly tab -->
   <div class="tab-content" id="tc-monthly">
-    <div id="monthly-tasks-list"></div>
+    <div id="monthly-tasks-list"><div class="loading-tasks">⏳ Loading tasks from sheet…</div></div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════ -->
-<!--  SCREEN 4: ADMIN                                -->
+<!--  SCREEN 4: ADMIN DASHBOARD                      -->
 <!-- ═══════════════════════════════════════════════ -->
 <div id="scr-admin" class="screen">
   <div class="admin-header">
     <div class="admin-header-top">
-      <div class="admin-title">⚙️ Admin Panel</div>
-      <button class="admin-back" onclick="backFromAdmin()">← Back</button>
+      <div>
+        <div class="admin-title">⚙️ Admin Dashboard</div>
+        <div class="admin-date" id="adm-date">—</div>
+      </div>
+      <button class="admin-signout" onclick="adminSignOut()">🔒 Sign Out</button>
     </div>
   </div>
 
   <div class="admin-body">
 
+    <!-- Live stats -->
+    <div class="admin-section">
+      <div class="admin-section-title">Today's Overview</div>
+      <div class="stats-row" id="admin-stats-row">
+        <div class="stat-card green"><div class="stat-val" id="st-in">—</div><div class="stat-label">Punch In</div></div>
+        <div class="stat-card amber"><div class="stat-val" id="st-out">—</div><div class="stat-label">Punch Out</div></div>
+        <div class="stat-card blue"><div class="stat-val" id="st-tasks">—</div><div class="stat-label">Tasks Done</div></div>
+      </div>
+    </div>
+
+    <!-- Checklist Live View -->
+    <div class="admin-section">
+      <div class="admin-section-title">Today's Checklist Progress</div>
+      <div class="admin-card">
+        <button class="btn-admin outline" onclick="loadAdminChecklist()">🔄 Refresh Task Status</button>
+        <div id="admin-checklist-content" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <!-- Face Registration -->
     <div class="admin-section">
       <div class="admin-section-title">Face Registration</div>
       <div class="admin-card">
         <div class="reg-info" id="reg-status-msg">Checking registration status…</div>
-        <!-- Admin camera for registration -->
-        <div id="reg-cam-wrap" class="cam-wrap" style="border-radius:10px;overflow:hidden;margin-bottom:12px;display:none;">
-          <video id="video2" autoplay muted playsinline webkit-playsinline style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);"></video>
-          <div class="face-oval" id="oval2" style="display:block;"></div>
+        <div class="admin-cam-wrap" id="reg-cam-wrap">
+          <video id="video2" autoplay muted playsinline webkit-playsinline></video>
+          <div class="face-oval2"></div>
         </div>
-        <label class="flabel">Name (should be "Didi" or her actual name)</label>
+        <label class="flabel">Name</label>
         <input type="text" id="reg-name" class="finput" placeholder="e.g. Didi" value="Didi">
         <button class="btn-admin pri" id="btn-register" onclick="startRegistration()">📸 Scan &amp; Register Face</button>
         <div class="alert" id="reg-alert"></div>
       </div>
     </div>
 
+    <!-- Manual Attendance -->
     <div class="admin-section">
       <div class="admin-section-title">Manual Attendance</div>
       <div class="admin-card">
@@ -315,19 +429,31 @@
       </div>
     </div>
 
+    <!-- Manage Tasks -->
     <div class="admin-section">
-      <div class="admin-section-title">Today's Report</div>
-      <div class="admin-card" id="admin-report-card">
-        <div style="color:var(--muted);font-size:0.82rem;">Tap below to load report</div>
-        <button class="btn-admin outline" style="margin-top:10px;" onclick="loadAdminReport()">📋 Load Today's Report</button>
+      <div class="admin-section-title">Manage Tasks (Edit in Sheet)</div>
+      <div class="admin-card">
+        <div class="reg-info">Tasks are loaded live from your Google Sheet. Edit the <strong>Tasks</strong> sheet in Google Sheets to add/remove/change tasks. Changes appear instantly in Didi's checklist.</div>
+        <button class="btn-admin outline" onclick="openTasksSheet()">📝 Open Tasks Sheet</button>
+        <button class="btn-admin outline" onclick="reloadTasksInAdmin()">🔄 Reload Tasks Preview</button>
+        <div id="admin-tasks-preview" style="margin-top:12px;overflow-x:auto;"></div>
+      </div>
+    </div>
+
+    <!-- Full Report -->
+    <div class="admin-section">
+      <div class="admin-section-title">Today's Attendance Report</div>
+      <div class="admin-card">
+        <button class="btn-admin outline" onclick="loadAdminReport()">📋 Load Report</button>
         <div id="admin-report-content" style="margin-top:10px;"></div>
       </div>
     </div>
 
+    <!-- Sheet Setup -->
     <div class="admin-section">
       <div class="admin-section-title">Sheet Setup (Run Once)</div>
       <div class="admin-card">
-        <div class="reg-info">After deploying the Google Apps Script, tap below to create all required sheets automatically.</div>
+        <div class="reg-info">Creates all required sheets (Tasks, Users, Logs, ChecklistLogs, DailyReport) with correct headers.</div>
         <button class="btn-admin outline" onclick="runSheetSetup()">🔧 Setup Google Sheets</button>
         <div class="alert" id="setup-alert"></div>
       </div>
@@ -351,106 +477,230 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════ -->
-<!--  BOTTOM NAV (shown on checklist + admin)        -->
+<!--  BOTTOM NAV                                     -->
 <!-- ═══════════════════════════════════════════════ -->
 <div class="bottom-nav hidden" id="bottom-nav">
   <div class="nav-item active" id="nav-checklist" onclick="navTo('checklist')">
     <span class="nav-icon">📋</span>ਚੈੱਕਲਿਸਟ
   </div>
-  <div class="nav-item" id="nav-admin" onclick="navTo('admin')">
+  <div class="nav-item hidden" id="nav-admin" onclick="navTo('admin')">
     <span class="nav-icon">⚙️</span>Admin
   </div>
 </div>
 
+<div class="bottom-nav hidden" id="admin-bottom-nav">
+  <div class="nav-item active" id="anav-dashboard" onclick="adminNavTo('dashboard')">
+    <span class="nav-icon">📊</span>Dashboard
+  </div>
+  <div class="nav-item" id="anav-checklist" onclick="adminNavTo('checklist')">
+    <span class="nav-icon">📋</span>Checklist
+  </div>
+  <div class="nav-item" id="anav-settings" onclick="adminNavTo('settings')">
+    <span class="nav-icon">⚙️</span>Settings
+  </div>
+</div>
+
 <script>
-// ╔═══════════════════════════════════════════════════════════╗
-//  DIDI ATTENDANCE + CHECKLIST APP
-//  Replace GAS_URL with your deployed Google Apps Script URL
-// ╚═══════════════════════════════════════════════════════════╝
-
-const GAS_URL    = 'https://script.google.com/macros/s/AKfycbzu_UUrx4EtkfOKeI_xcIzz8G-dy0Edf1I2w9LTqK6ERp9EeU7e-_Er4AKue-R-Ck35/exec';
-const DIDI_NAME  = 'Didi';
-const MODEL_URL  = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
-const MODEL_CACHE = 'didi-app-models-v1';
-
-// ── Face API tuning ──
-const THRESHOLD      = 0.45;
-const DETECT_FRAMES  = 3;
-const REG_FRAMES     = 6;
-const FRAME_GAP_MS   = 100;
-const MIN_SCORE      = 0.58;
+// ════════════════════════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════════════════════════
+const GAS_URL      = 'https://script.google.com/macros/s/AKfycbz-EsExPpSjaplbc2-YMipYH-KKuAMs-5Jx1Gx17NUrwHg90PyDCEyVVQJRuHXMy9h7/exec';
+const DIDI_NAME    = 'Didi';
+const ADMIN_PIN    = '0033';
+const MODEL_URL    = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+const MODEL_CACHE  = 'didi-app-models-v2';
+const THRESHOLD    = 0.45;
+const DETECT_FRAMES = 3;
+const REG_FRAMES   = 6;
+const FRAME_GAP_MS = 100;
+const MIN_SCORE    = 0.58;
 const MIN_FACE_RATIO = 0.04;
 
-// ── App state ──
 var faceapi     = null;
 var faceMatcher = null;
 var detectOpts  = null;
 var isReady     = false;
 var isBusy      = false;
-var currentScreen = 'load';
 var punchInTime = null;
+var cameraStarted = false;
+var skipToChecklist = false;
+var successGoToChecklist = false;
+var currentRole = null; // 'didi' or 'admin'
+var TASKS = { daily: [], weekly: [], monthly: [] };
 
-// ── localStorage keys ──
-function todayStr() {
-  return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+const PUNCH_KEY = () => 'didi_punch_' + todayStr();
+const TASKS_KEY = () => 'didi_tasks_' + todayStr();
+
+const DAY_NAMES = ['ਐਤਵਾਰ Sun','ਸੋਮਵਾਰ Mon','ਮੰਗਲਵਾਰ Tue','ਬੁੱਧਵਾਰ Wed','ਵੀਰਵਾਰ Thu','ਸ਼ੁੱਕਰਵਾਰ Fri','ਸ਼ਨੀਵਾਰ Sat'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// ════════════════════════════════════════════════════════
+//  ROLE SELECTION
+// ════════════════════════════════════════════════════════
+function chooseDidi() {
+  currentRole = 'didi';
+  var saved = localStorage.getItem(PUNCH_KEY());
+  showScreen('scr-load');
+  prog('Checking attendance…', 5);
+  if (saved) {
+    punchInTime = saved;
+    prog('Already punched in — loading…', 30);
+    document.getElementById('cl-punch-time').textContent = saved;
+    startCamera();
+    loadFaceApiScript(true);
+  } else {
+    prog('Loading camera…', 10);
+    startCamera();
+    loadFaceApiScript(false);
+  }
 }
-const PUNCH_KEY  = () => 'didi_punch_'  + todayStr();
-const TASKS_KEY  = () => 'didi_tasks_'  + todayStr();
 
-// ════════════════════════════════════
-//  TASK DATA (from Didi_Checklists.xlsx)
-// ════════════════════════════════════
+function showAdminPw() {
+  pwInput = '';
+  updatePwDots();
+  document.getElementById('pw-err').textContent = '';
+  showScreen('scr-adminpw');
+}
 
-const DAILY_TASKS = [
-  { id:'D01', emoji:'🗑️', en:'Empty all dustbins, wash & sun-dry, put fresh bags. Clean outside street (gali).', pa:'ਕੂੜੇ ਦੇ ਡੱਬੇ ਖਾਲੀ ਕਰੋ, ਧੋਵੋ, ਧੁੱਪ ਵਿੱਚ ਸੁਕਾਓ' },
-  { id:'D02', emoji:'🧹', en:'Sweep Ground Floor — every corner, under furniture.', pa:'ਹੇਠਲੀ ਮੰਜ਼ਿਲ ਝਾੜੂ ਲਗਾਓ' },
-  { id:'D03', emoji:'🧹', en:'Sweep Top Floor — every corner, under furniture.', pa:'ਉੱਪਰਲੀ ਮੰਜ਼ਿਲ ਝਾੜੂ ਲਗਾਓ' },
-  { id:'D04', emoji:'🪣', en:'Mop Ground Floor — DRY mop only! Squeeze cloth hard, floor dries fast.', pa:'ਹੇਠਲੀ ਮੰਜ਼ਿਲ ਪੂੰਝੋ (ਸੁੱਕਾ ਮੋਪ ਹੀ)' },
-  { id:'D05', emoji:'🪣', en:'Mop Top Floor — DRY mop only! Squeeze cloth hard, floor dries fast.', pa:'ਉੱਪਰਲੀ ਮੰਜ਼ਿਲ ਪੂੰਝੋ (ਸੁੱਕਾ ਮੋਪ ਹੀ)' },
-  { id:'D06', emoji:'🍳', en:'Cook dinner. Wash all utensils. Wipe stove & kitchen counters clean.', pa:'ਰਾਤ ਦਾ ਖਾਣਾ ਬਣਾਓ, ਭਾਂਡੇ ਧੋਵੋ' },
-  { id:'D07', emoji:'🍽️', en:'Clean kitchen surfaces, stove top, sink. Leave kitchen spotless.', pa:'ਰਸੋਈ ਸਾਫ਼ ਕਰੋ — ਚੁੱਲ੍ਹਾ, ਸਿੰਕ, ਕਾਊਂਟਰ' },
-  { id:'D08', emoji:'🫙', en:'Once utensils are dry, put each item back in its correct drawer/cabinet.', pa:'ਭਾਂਡੇ ਸੁੱਕ ਜਾਣ ਤੋਂ ਬਾਅਦ ਸਹੀ ਜਗ੍ਹਾ ਰੱਖੋ' },
-  { id:'D09', emoji:'🧺', en:'Washing machine (if used) — wipe drum & detergent tray, leave door open to air-dry.', pa:'ਵਾਸ਼ਿੰਗ ਮਸ਼ੀਨ (ਜੇ ਵਰਤੀ) — ਡਰੱਮ ਪੂੰਝੋ, ਦਰਵਾਜ਼ਾ ਖੁੱਲ੍ਹਾ ਛੱਡੋ' },
-  { id:'D10', emoji:'🌿', en:'Clean the lawn area, attic stairs, and street (gali) daily.', pa:'ਲਾਅਨ, ਅਟਾਰੀ ਦੀਆਂ ਪੌੜੀਆਂ ਅਤੇ ਗਲੀ ਸਾਫ਼ ਕਰੋ' },
-  { id:'D11', emoji:'🏠', en:'Tidy up — remotes, cushions, shoes, toys back in their correct places.', pa:'ਚੀਜ਼ਾਂ ਸਹੀ ਥਾਂ ਰੱਖੋ — ਰਿਮੋਟ, ਸਿਰਹਾਣੇ, ਜੁੱਤੇ, ਖਿਡੌਣੇ' },
-];
+// ════════════════════════════════════════════════════════
+//  ADMIN PASSWORD KEYPAD
+// ════════════════════════════════════════════════════════
+var pwInput = '';
+function pwKey(k) {
+  if (pwInput.length >= 4) return;
+  pwInput += k;
+  updatePwDots();
+  if (pwInput.length === 4) {
+    setTimeout(checkAdminPin, 200);
+  }
+}
+function pwBack() { pwInput = pwInput.slice(0, -1); updatePwDots(); }
+function pwClear() { pwInput = ''; updatePwDots(); }
+function updatePwDots() {
+  for (var i = 0; i < 4; i++) {
+    document.getElementById('pwd' + i).classList.toggle('filled', i < pwInput.length);
+  }
+}
+function checkAdminPin() {
+  if (pwInput === ADMIN_PIN) {
+    currentRole = 'admin';
+    pwInput = '';
+    showAdminDashboard();
+  } else {
+    document.getElementById('pw-err').textContent = '❌ Wrong PIN — try again';
+    pwInput = '';
+    updatePwDots();
+    setTimeout(function() { document.getElementById('pw-err').textContent = ''; }, 2500);
+  }
+}
 
-// Weekly tasks by day (0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat)
-const WEEKLY_TASKS = [
-  { id:'W01', day:1, emoji:'🛏️', en:'Change ALL bedsheets in the house. Put old ones for washing.', pa:'ਸਾਰੀਆਂ ਬੈੱਡਸ਼ੀਟਾਂ ਬਦਲੋ' },
-  { id:'W02', day:2, emoji:'🧊', en:'Clean Top Floor fridge — wipe all shelves inside & outside.', pa:'ਉੱਪਰਲੀ ਮੰਜ਼ਿਲ ਦਾ ਫਰਿੱਜ ਸਾਫ਼ ਕਰੋ' },
-  { id:'W03', day:2, emoji:'🧊', en:'Clean Ground Floor fridge — wipe all shelves inside & outside.', pa:'ਹੇਠਲੀ ਮੰਜ਼ਿਲ ਦਾ ਫਰਿੱਜ ਸਾਫ਼ ਕਰੋ' },
-  { id:'W04', day:2, emoji:'🪟', en:'Clean ALL windows with Colin spray — wipe both sides.', pa:'ਸਾਰੀਆਂ ਖਿੜਕੀਆਂ Colin ਨਾਲ ਸਾਫ਼ ਕਰੋ (ਦੋਵੇਂ ਪਾਸੇ)' },
-  { id:'W05', day:3, emoji:'🧺', en:'Laundry Day — wash all clothes.', pa:'ਕੱਪੜੇ ਧੋਵੋ — ਲਾਂਡਰੀ ਦਿਨ' },
-  { id:'W06', day:3, emoji:'⚠️', en:'Colourful clothes in sun MAX 2 hours — bring inside as soon as dry!', pa:'ਰੰਗਦਾਰ ਕੱਪੜੇ 2 ਘੰਟੇ ਤੋਂ ਵੱਧ ਧੁੱਪ ਵਿੱਚ ਨਾ ਛੱਡੋ' },
-  { id:'W07', day:4, emoji:'🚿', en:'Wash the lawn washroom — floor, toilet, sink, walls.', pa:'ਲਾਅਨ ਵਾਸ਼ਰੂਮ ਧੋਵੋ — ਫ਼ਰਸ਼, ਟਾਇਲਟ, ਸਿੰਕ, ਦੀਵਾਰਾਂ' },
-  { id:'W08', day:4, emoji:'📦', en:'Organize the store room — put everything in order.', pa:'ਸਟੋਰ ਰੂਮ ਸਾਫ਼ ਕਰੋ — ਸਭ ਸਮਾਨ ਸਹੀ ਰੱਖੋ' },
-  { id:'W09', day:5, emoji:'🚽', en:'All washrooms deep clean — toilet, floor, walls.', pa:'ਸਾਰੇ ਵਾਸ਼ਰੂਮਾਂ ਦੀ ਡੂੰਘੀ ਸਫ਼ਾਈ — ਟਾਇਲਟ, ਫ਼ਰਸ਼, ਦੀਵਾਰਾਂ' },
-  { id:'W10', day:5, emoji:'🪟', en:'Clean all bathroom tiles — scrub grout lines if needed.', pa:'ਸਾਰੇ ਟਾਇਲਾਂ ਸਾਫ਼ ਕਰੋ' },
-  { id:'W11', day:5, emoji:'🚰', en:'Clean all sinks in house — wipe taps, remove water marks.', pa:'ਸਾਰੇ ਸਿੰਕ ਸਾਫ਼ ਕਰੋ — ਟੂਟੀਆਂ ਅਤੇ ਪਾਣੀ ਦੇ ਦਾਗ਼ ਹਟਾਓ' },
-  { id:'W12', day:6, emoji:'🪞', en:'Clean ALL glass surfaces in the house — mirrors, glass panels.', pa:'ਘਰ ਦੇ ਸਾਰੇ ਸ਼ੀਸ਼ੇ ਸਾਫ਼ ਕਰੋ' },
-  { id:'W13', day:6, emoji:'🚪', en:'Wipe down ALL doors — both sides, handles & frames.', pa:'ਸਾਰੇ ਦਰਵਾਜ਼ੇ ਪੂੰਝੋ — ਦੋਵੇਂ ਪਾਸੇ, ਹੈਂਡਲ ਅਤੇ ਫ਼ਰੇਮ' },
-  { id:'W14', day:0, emoji:'🍳', en:'Make breakfast for the whole family — everyone is home today!', pa:'ਪੂਰੇ ਪਰਿਵਾਰ ਲਈ ਸਵੇਰ ਦਾ ਨਾਸ਼ਤਾ ਬਣਾਓ' },
-  { id:'W15', day:0, emoji:'🍛', en:'Cook lunch for the whole family.', pa:'ਪੂਰੇ ਪਰਿਵਾਰ ਲਈ ਦੁਪਹਿਰ ਦਾ ਖਾਣਾ ਬਣਾਓ' },
-];
+function adminSignOut() {
+  currentRole = null;
+  document.getElementById('admin-bottom-nav').classList.add('hidden');
+  showScreen('scr-role');
+}
 
-// Monthly tasks — by week of month (1–4)
-const MONTHLY_TASKS = [
-  { id:'M01', week:1, emoji:'🪑', en:'Deep clean behind & under ALL furniture — move pieces, sweep, mop underneath.', pa:'ਸਾਰੇ ਫ਼ਰਨੀਚਰ ਦੇ ਪਿੱਛੇ ਅਤੇ ਹੇਠਾਂ ਡੂੰਘੀ ਸਫ਼ਾਈ' },
-  { id:'M02', week:1, emoji:'💡', en:'Clean all light fixtures, bulbs, and ceiling fans — dust & wipe blades.', pa:'ਸਾਰੀਆਂ ਲਾਈਟਾਂ ਅਤੇ ਪੱਖੇ ਸਾਫ਼ ਕਰੋ' },
-  { id:'M03', week:2, emoji:'❄️', en:'Clean AC filters & fan blades on Top Floor — dust, wash filter if needed.', pa:'ਉੱਪਰਲੀ ਮੰਜ਼ਿਲ AC ਫ਼ਿਲਟਰ ਅਤੇ ਪੱਖੇ ਸਾਫ਼ ਕਰੋ' },
-  { id:'M04', week:2, emoji:'❄️', en:'Clean AC filters & fan blades on Ground Floor — dust, wash filter if needed.', pa:'ਹੇਠਲੀ ਮੰਜ਼ਿਲ AC ਫ਼ਿਲਟਰ ਅਤੇ ਪੱਖੇ ਸਾਫ਼ ਕਰੋ' },
-  { id:'M05', week:3, emoji:'🗄️', en:'Clean inside all wardrobes & cupboards — remove items, wipe shelves, restack neatly.', pa:'ਸਾਰੀਆਂ ਅਲਮਾਰੀਆਂ ਅੰਦਰੋਂ ਸਾਫ਼ ਕਰੋ' },
-  { id:'M06', week:3, emoji:'🧴', en:'Restock cleaning supplies — check attic inventory, note what is running low.', pa:'ਸਫ਼ਾਈ ਦਾ ਸਾਮਾਨ ਚੈੱਕ ਕਰੋ — ਅਟਾਰੀ ਵਿੱਚੋਂ ਦੇਖੋ ਕੀ ਖ਼ਤਮ ਹੋਣ ਵਾਲਾ ਹੈ' },
-  { id:'M07', week:4, emoji:'🍳', en:'Deep clean gas stove — remove burners, wash grates, scrub surface.', pa:'ਗੈਸ ਚੁੱਲ੍ਹੇ ਦੀ ਡੂੰਘੀ ਸਫ਼ਾਈ — ਬਰਨਰ ਕੱਢੋ, ਧੋਵੋ' },
-  { id:'M08', week:4, emoji:'🥫', en:'Organize kitchen pantry & check expiry dates on all food packets/bottles.', pa:'ਰਸੋਈ ਦੇ ਸਾਮਾਨ ਦੀ ਮਿਤੀ ਚੈੱਕ ਕਰੋ, ਸਹੀ ਕ੍ਰਮ ਵਿੱਚ ਰੱਖੋ' },
-];
+// ════════════════════════════════════════════════════════
+//  ADMIN DASHBOARD LOAD
+// ════════════════════════════════════════════════════════
+function showAdminDashboard() {
+  setDates();
+  document.getElementById('adm-date').textContent = fmtDate();
+  showScreen('scr-admin');
+  document.getElementById('admin-bottom-nav').classList.remove('hidden');
+  // Auto-load today's stats
+  loadAdminStats();
+  loadRegStatus();
+  startCamera(); // for face registration
+}
 
-const DAY_NAMES_PA = ['ਐਤਵਾਰ Sun', 'ਸੋਮਵਾਰ Mon', 'ਮੰਗਲਵਾਰ Tue', 'ਬੁੱਧਵਾਰ Wed', 'ਵੀਰਵਾਰ Thu', 'ਸ਼ੁੱਕਰਵਾਰ Fri', 'ਸ਼ਨੀਵਾਰ Sat'];
+async function loadAdminStats() {
+  var res = await api('getDailyReport', {});
+  if (res.success) {
+    var didi = res.staff && res.staff[0] ? res.staff[0] : null;
+    document.getElementById('st-in').textContent  = didi && didi.inTime  ? didi.inTime  : '—';
+    document.getElementById('st-out').textContent = didi && didi.outTime ? didi.outTime : '—';
+  }
+  // Task count
+  var tk = await api('getTaskStatus', {});
+  if (tk.success) {
+    var cnt = Object.keys(tk.completed).length;
+    document.getElementById('st-tasks').textContent = cnt + ' ✓';
+  }
+}
 
-// ════════════════════════════════════
+async function loadAdminChecklist() {
+  var res = await api('getTaskStatus', {});
+  var tasksRes = await api('getTasks', {});
+  var el = document.getElementById('admin-checklist-content');
+  if (!tasksRes.success || !tasksRes.tasks) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;">Could not load tasks.</div>';
+    return;
+  }
+
+  var done = res.success ? res.completed : {};
+  var allTasks = tasksRes.tasks;
+  var today = new Date().getDay();
+  var weekNum = Math.ceil(new Date().getDate() / 7);
+  var relevantTasks = allTasks.filter(function(t) {
+    if (t.type === 'D') return true;
+    if (t.type === 'W') return parseInt(t.day) === today;
+    if (t.type === 'M') return parseInt(t.week) === weekNum;
+    return false;
+  });
+
+  var totalDone = relevantTasks.filter(function(t) { return done[t.id]; }).length;
+  var pct = relevantTasks.length > 0 ? Math.round((totalDone / relevantTasks.length) * 100) : 0;
+
+  var html = '<div style="margin-bottom:10px;font-size:0.8rem;font-weight:700;color:var(--muted);">'
+    + totalDone + ' / ' + relevantTasks.length + ' tasks done today (' + pct + '%)</div>'
+    + '<div style="background:var(--border);border-radius:10px;height:8px;overflow:hidden;margin-bottom:14px;">'
+    + '<div style="background:var(--green-btn);height:100%;border-radius:10px;width:' + pct + '%;transition:width 0.4s;"></div></div>';
+
+  html += '<table class="task-table"><thead><tr><th>Task</th><th>Status</th><th>Time</th></tr></thead><tbody>';
+  relevantTasks.forEach(function(t) {
+    var isDone = !!done[t.id];
+    html += '<tr>'
+      + '<td><span style="margin-right:6px;">' + (t.emoji||'•') + '</span>' + (t.en||t.pa||'') + '</td>'
+      + '<td>' + (isDone ? '<span class="done-badge">✓ Done</span>' : '<span class="pending-badge">Pending</span>') + '</td>'
+      + '<td style="color:var(--muted);font-size:0.72rem;">' + (isDone ? (done[t.id]||'') : '—') + '</td>'
+      + '</tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+async function reloadTasksInAdmin() {
+  var res = await api('getTasks', {});
+  var el = document.getElementById('admin-tasks-preview');
+  if (!res.success || !res.tasks) { el.innerHTML = '<div style="color:red;font-size:0.8rem;">Could not load</div>'; return; }
+  var html = '<table class="task-table"><thead><tr><th>#</th><th>Type</th><th>Task</th></tr></thead><tbody>';
+  res.tasks.forEach(function(t) {
+    var typeBadge = t.type === 'D' ? '<span class="task-badge daily">Daily</span>'
+      : t.type === 'W' ? '<span class="task-badge weekly">Weekly</span>'
+      : '<span class="task-badge monthly">Monthly</span>';
+    html += '<tr><td style="color:var(--muted);">' + t.id + '</td><td>' + typeBadge + '</td><td>' + (t.emoji||'') + ' ' + (t.en||t.pa||'') + '</td></tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function openTasksSheet() {
+  window.open(GAS_URL.replace('/exec', '') + '?action=openSheet', '_blank');
+}
+
+function adminNavTo(dest) {
+  ['dashboard','checklist','settings'].forEach(function(d) {
+    var el = document.getElementById('anav-' + d);
+    if (el) el.classList.toggle('active', d === dest);
+  });
+  // All admin sections visible on same screen — just scroll to relevant
+}
+
+// ════════════════════════════════════════════════════════
 //  CLOCK & DATE
-// ════════════════════════════════════
+// ════════════════════════════════════════════════════════
 function fmtTime(d) {
   d = d || new Date();
   var h = d.getHours(), m = d.getMinutes(), ap = h >= 12 ? 'PM' : 'AM';
@@ -459,93 +709,53 @@ function fmtTime(d) {
 }
 function fmtDate(d) {
   d = d || new Date();
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return DAY_NAMES_PA[d.getDay()].split(' ')[1] + ', ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+  return DAY_NAMES[d.getDay()].split(' ')[1] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
 }
 function tickClock() {
   var t = fmtTime();
-  var el1 = document.getElementById('att-clock');
-  var el2 = document.getElementById('cl-clock');
-  if (el1) el1.textContent = t;
-  if (el2) el2.textContent = t;
+  ['att-clock','cl-clock'].forEach(function(id) { var e = document.getElementById(id); if (e) e.textContent = t; });
 }
 tickClock(); setInterval(tickClock, 10000);
-
 function setDates() {
   var d = new Date();
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var full = DAY_NAMES_PA[d.getDay()].split(' ')[0] + ' ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
-  var el1 = document.getElementById('att-date');
-  var el2 = document.getElementById('cl-date');
-  if (el1) el1.textContent = full;
-  if (el2) el2.textContent = full;
+  var full = DAY_NAMES[d.getDay()].split(' ')[0] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+  ['att-date','cl-date'].forEach(function(id) { var e = document.getElementById(id); if (e) e.textContent = full; });
 }
 setDates();
 
-// ════════════════════════════════════
-//  INPUT SIZE DETECTION
-// ════════════════════════════════════
+// ════════════════════════════════════════════════════════
+//  FACE-API CAMERA + MODELS
+// ════════════════════════════════════════════════════════
 function pickInputSize() {
   var cores = navigator.hardwareConcurrency || 2;
   var memGB = navigator.deviceMemory || 2;
-  if (cores <= 2 || memGB <= 1) return 128;
-  return 160;
+  return (cores <= 2 || memGB <= 1) ? 128 : 160;
 }
 var INPUT_SIZE = pickInputSize();
 
-// ════════════════════════════════════
-//  STARTUP: check if already punched in today
-// ════════════════════════════════════
-window.addEventListener('DOMContentLoaded', function() {
-  prog('Checking attendance status…', 5);
-  var savedPunch = localStorage.getItem(PUNCH_KEY());
-
-  if (savedPunch) {
-    // Already punched in today — skip attendance screen
-    punchInTime = savedPunch;
-    prog('Already punched in — loading checklist…', 30);
-    document.getElementById('cl-punch-time').textContent = savedPunch;
-    loadFaceApiScript(true); // still load models (for admin registration), but go to checklist after
-  } else {
-    // Need to punch in — show attendance screen
-    prog('Loading camera…', 10);
-    startCamera();
-    loadFaceApiScript(false);
-  }
-});
-
-// ════════════════════════════════════
-//  CAMERA STARTUP
-// ════════════════════════════════════
-var cameraStarted = false;
 function startCamera() {
   if (cameraStarted) return;
   cameraStarted = true;
-  navigator.mediaDevices.getUserMedia({
-    video: { facingMode:'user', width:{ideal:320}, height:{ideal:240} }, audio: false
-  }).then(function(stream) {
-    var v = document.getElementById('video');
-    v.srcObject = stream; v.play();
-    // also wire up video2 (admin cam) if present
-    var v2 = document.getElementById('video2');
-    if (v2) { v2.srcObject = stream; }
-    prog('Camera ready — loading AI…', 20);
-  }).catch(function(err) {
-    setOverlay('❌', 'Camera error: ' + err.message + '\nAllow camera access and reload.', 100, '#f87171');
-  });
+  navigator.mediaDevices.getUserMedia({ video: { facingMode:'user', width:{ideal:320}, height:{ideal:240} }, audio: false })
+    .then(function(stream) {
+      ['video','video2'].forEach(function(id) {
+        var v = document.getElementById(id);
+        if (v) { v.srcObject = stream; v.play(); }
+      });
+      prog('Camera ready — loading AI…', 20);
+    })
+    .catch(function(err) {
+      setOverlay('❌', 'Camera error: ' + err.message, 100, '#f87171');
+    });
 }
 
-// ════════════════════════════════════
-//  FACE-API LOADING
-// ════════════════════════════════════
-var skipToChecklist = false;
 function loadFaceApiScript(goChecklist) {
   skipToChecklist = goChecklist;
   var s = document.createElement('script');
   s.src = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js';
   s.async = true;
   s.onload = function() { faceapi = window.faceapi; loadModels(); };
-  s.onerror = function() { setOverlay('❌','Failed to load AI library. Check internet and reload.', 100,'#f87171'); };
+  s.onerror = function() { setOverlay('❌','Failed to load AI. Check internet & reload.',100,'#f87171'); };
   document.head.appendChild(s);
 }
 
@@ -558,39 +768,28 @@ async function loadModels() {
       var origFetch = window.fetch;
       window.fetch = async function(url, opts) {
         if (typeof url === 'string' && url.includes('face-api')) {
-          try {
-            var hit = await cache.match(url);
-            if (hit) return hit;
-            var resp = await origFetch(url, opts);
-            if (resp && resp.ok) { try { await cache.put(url, resp.clone()); } catch(e){} }
-            return resp;
-          } catch(e) { return origFetch(url, opts); }
+          try { var hit = await cache.match(url); if (hit) return hit; var resp = await origFetch(url,opts); if (resp&&resp.ok) try{await cache.put(url,resp.clone());}catch(e){} return resp; } catch(e) { return origFetch(url,opts); }
         }
-        return origFetch(url, opts);
+        return origFetch(url,opts);
       };
     }
-
     await Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
       faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
       faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
     ]);
-
     detectOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: INPUT_SIZE, scoreThreshold: MIN_SCORE });
-
     prog('Warming up…', 75);
     await warmUp();
     prog('Loading face data…', 88);
     await loadDatabase();
 
     if (skipToChecklist) {
-      // Go directly to checklist
-      prog('Done! Loading checklist…', 100);
-      setTimeout(function() {
-        showChecklistScreen();
-      }, 400);
+      prog('Loading tasks from sheet…', 92);
+      await loadTasksFromSheet();
+      prog('Done!', 100);
+      setTimeout(showChecklistScreen, 400);
     } else {
-      // Show attendance screen
       prog('Ready!', 100);
       setTimeout(function() {
         document.getElementById('cam-overlay').classList.add('hidden');
@@ -600,84 +799,94 @@ async function loadModels() {
     }
   } catch(err) {
     prog('❌ Error: ' + err.message, 100);
-    setOverlay('❌', err.message + '\n\nReload the page.', 100, '#f87171');
+    setOverlay('❌', err.message + '\n\nReload.', 100, '#f87171');
   }
 }
 
 async function warmUp() {
-  var canvas = document.createElement('canvas');
-  canvas.width = canvas.height = 128;
-  var ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#666'; ctx.fillRect(0,0,128,128);
-  try { await faceapi.detectSingleFace(canvas, detectOpts); } catch(e) {}
+  var c = document.createElement('canvas'); c.width = c.height = 128;
+  c.getContext('2d').fillRect(0,0,128,128);
+  try { await faceapi.detectSingleFace(c, detectOpts); } catch(e) {}
 }
 
 function prog(msg, pct) {
-  var m = document.getElementById('ld-msg');
-  var f = document.getElementById('ld-fill');
-  var co = document.getElementById('co-msg');
-  var cb = document.getElementById('co-bar');
-  if (m) m.textContent = msg;
-  if (f) f.style.width = pct + '%';
-  if (co) co.textContent = msg;
-  if (cb) cb.style.width = pct + '%';
+  ['ld-msg'].forEach(function(id) { var e = document.getElementById(id); if (e) e.textContent = msg; });
+  var f = document.getElementById('ld-fill'); if (f) f.style.width = pct + '%';
+  var cm = document.getElementById('co-msg'); if (cm) cm.textContent = msg;
+  var cb = document.getElementById('co-bar'); if (cb) cb.style.width = pct + '%';
 }
 
 function setOverlay(icon, msg, pct, barColor) {
-  document.getElementById('co-icon').textContent = icon;
-  document.getElementById('co-msg').innerHTML = msg.replace(/\n/g,'<br>');
-  document.getElementById('co-bar').style.width = (pct||100) + '%';
-  if (barColor) document.getElementById('co-bar').style.background = barColor;
+  var i = document.getElementById('co-icon'); if (i) i.textContent = icon;
+  var m = document.getElementById('co-msg'); if (m) m.innerHTML = msg.replace(/\n/g,'<br>');
+  var b = document.getElementById('co-bar'); if (b) { b.style.width = (pct||100)+'%'; if (barColor) b.style.background = barColor; }
 }
 
-// ════════════════════════════════════
-//  LOAD FACE DATABASE FROM GAS
-// ════════════════════════════════════
 async function loadDatabase() {
   try {
     var res = await api('getUsers', {});
-    if (res.error) { setStatus(res.error, 'red'); return; }
-    if (!res.users || res.users.length === 0) {
-      setStatus('No face registered yet — go to Admin → Register Face', 'amber');
+    if (res.error || !res.users || !res.users.length) {
+      setStatus('No face registered — go to Admin → Register Face', 'amber');
       isReady = false;
+      var rm = document.getElementById('reg-status-msg');
+      if (rm) rm.textContent = '⚠️ No face registered yet. Enter name and tap Register.';
       return;
     }
     var labeled = res.users.map(function(u) {
       var raw = JSON.parse(u.descriptor);
-      var descriptors = Array.isArray(raw[0])
-        ? raw.map(function(d) { return new Float32Array(d); })
-        : [new Float32Array(raw)];
-      return new faceapi.LabeledFaceDescriptors(u.label, descriptors);
+      var descs = Array.isArray(raw[0]) ? raw.map(function(d) { return new Float32Array(d); }) : [new Float32Array(raw)];
+      return new faceapi.LabeledFaceDescriptors(u.label, descs);
     });
     faceMatcher = new faceapi.FaceMatcher(labeled, THRESHOLD);
     isReady = true;
-    setStatus('Ready to punch — face the camera & tap!', 'green');
+    setStatus('Ready — face the camera & tap!', 'green');
+    var rm = document.getElementById('reg-status-msg');
+    if (rm) rm.textContent = '✅ ' + res.users[0].label + ' is registered. Tap to re-register if needed.';
+  } catch(e) { setStatus('Could not load face data — check network', 'amber'); }
+}
 
-    var regCard = document.getElementById('reg-status-msg');
-    if (regCard) regCard.textContent = '✅ ' + res.users[0].label + ' is registered. Tap below to re-register if needed.';
-
-  } catch(e) {
-    setStatus('Could not load face data — check GAS URL', 'amber');
+async function loadRegStatus() {
+  var res = await api('getUsers', {});
+  var rm = document.getElementById('reg-status-msg');
+  if (!rm) return;
+  if (res.success && res.users && res.users.length > 0) {
+    rm.textContent = '✅ ' + res.users[0].label + ' is registered. Tap to re-register if needed.';
+  } else {
+    rm.textContent = '⚠️ No face registered yet. Enter name and tap Register.';
   }
 }
 
-// ════════════════════════════════════
-//  CAPTURE & MATCH
-// ════════════════════════════════════
+// ════════════════════════════════════════════════════════
+//  TASKS FROM GOOGLE SHEET
+// ════════════════════════════════════════════════════════
+async function loadTasksFromSheet() {
+  try {
+    var res = await api('getTasks', {});
+    if (res.success && res.tasks) {
+      TASKS.daily   = res.tasks.filter(function(t) { return t.type === 'D'; });
+      TASKS.weekly  = res.tasks.filter(function(t) { return t.type === 'W'; });
+      TASKS.monthly = res.tasks.filter(function(t) { return t.type === 'M'; });
+    }
+  } catch(e) {
+    // fallback to empty
+    TASKS = { daily: [], weekly: [], monthly: [] };
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  FACE CAPTURE & MATCH
+// ════════════════════════════════════════════════════════
 async function captureFrames(vid, needed) {
-  var descriptors = [], maxAttempts = needed * 2;
-  for (var attempt = 0; attempt < maxAttempts && descriptors.length < needed; attempt++) {
+  var descriptors = [], max = needed * 2;
+  for (var i = 0; i < max && descriptors.length < needed; i++) {
     try {
       var det = await faceapi.detectSingleFace(vid, detectOpts).withFaceLandmarks(true).withFaceDescriptor();
       if (det && det.detection.score >= MIN_SCORE) {
-        var box = det.detection.box;
-        var fw = vid.videoWidth || 320, fh = vid.videoHeight || 240;
-        if ((box.width * box.height) / (fw * fh) >= MIN_FACE_RATIO) {
-          descriptors.push(det.descriptor);
-        }
+        var b = det.detection.box, fw = vid.videoWidth||320, fh = vid.videoHeight||240;
+        if ((b.width*b.height)/(fw*fh) >= MIN_FACE_RATIO) descriptors.push(det.descriptor);
       }
     } catch(e) {}
-    if (descriptors.length < needed && attempt < maxAttempts - 1) await sleep(FRAME_GAP_MS);
+    if (descriptors.length < needed && i < max-1) await sleep(FRAME_GAP_MS);
   }
   return descriptors.length >= needed ? descriptors : null;
 }
@@ -685,85 +894,96 @@ async function captureFrames(vid, needed) {
 function votingMatch(descs) {
   var votes = {};
   descs.forEach(function(d) {
-    var m = faceMatcher.findBestMatch(d), lbl = m.label;
-    if (!votes[lbl]) votes[lbl] = { count:0, totalDist:0 };
-    votes[lbl].count++; votes[lbl].totalDist += m.distance;
+    var m = faceMatcher.findBestMatch(d), l = m.label;
+    if (!votes[l]) votes[l] = { count:0, totalDist:0 };
+    votes[l].count++; votes[l].totalDist += m.distance;
   });
-  var bestLabel = null, bestCount = 0, bestAvg = Infinity;
-  Object.keys(votes).forEach(function(lbl) {
-    var v = votes[lbl], avg = v.totalDist / v.count;
-    if (v.count > bestCount || (v.count === bestCount && avg < bestAvg)) {
-      bestLabel = lbl; bestCount = v.count; bestAvg = avg;
-    }
+  var best = null, bc = 0, ba = Infinity;
+  Object.keys(votes).forEach(function(l) {
+    var v = votes[l], avg = v.totalDist/v.count;
+    if (v.count > bc || (v.count === bc && avg < ba)) { best = l; bc = v.count; ba = avg; }
   });
-  if (!bestLabel || bestCount / descs.length < 0.5 || bestLabel === 'unknown') return null;
-  return { label: bestLabel, avgDistance: bestAvg };
+  if (!best || bc/descs.length < 0.5 || best === 'unknown') return null;
+  return { label: best, avgDistance: ba };
 }
 
 function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
 
-// ════════════════════════════════════
-//  PUNCH IN / OUT
-// ════════════════════════════════════
+// ════════════════════════════════════════════════════════
+//  PUNCH IN
+// ════════════════════════════════════════════════════════
 document.getElementById('btn-punch').addEventListener('click', async function() {
-  if (!isReady || isBusy) {
-    if (!isReady) showAttAlert('⏳ Still loading — please wait.', 'info');
-    return;
-  }
+  if (!isReady || isBusy) { if (!isReady) showAttAlert('⏳ Still loading…', 'info'); return; }
   isBusy = true;
-  document.getElementById('btn-punch').disabled = true;
-  document.getElementById('btn-punch').textContent = '🔍 ਸਕੈਨ ਹੋ ਰਿਹਾ ਹੈ… hold still';
+  var btn = document.getElementById('btn-punch');
+  btn.disabled = true; btn.textContent = '🔍 Scanning… hold still';
   showAttAlert('⏳ Scanning face…', 'info');
 
-  var vid = document.getElementById('video');
-  var frames = await captureFrames(vid, DETECT_FRAMES);
+  var frames = await captureFrames(document.getElementById('video'), DETECT_FRAMES);
   if (!frames) {
-    isBusy = false; document.getElementById('btn-punch').disabled = false;
-    document.getElementById('btn-punch').textContent = '📷 ਹਾਜ਼ਰੀ ਦਰਜ ਕਰੋ — Mark Attendance';
-    showAttAlert('❌ No face detected. Move closer and ensure good lighting.', 'error');
-    return;
+    isBusy = false; btn.disabled = false; btn.textContent = '📷 ਹਾਜ਼ਰੀ ਦਰਜ ਕਰੋ — Mark Attendance';
+    showAttAlert('❌ No face detected. Move closer, better lighting.', 'error'); return;
   }
-
   var result = votingMatch(frames);
   if (!result) {
-    isBusy = false; document.getElementById('btn-punch').disabled = false;
-    document.getElementById('btn-punch').textContent = '📷 ਹਾਜ਼ਰੀ ਦਰਜ ਕਰੋ — Mark Attendance';
-    showAttAlert('❌ Face not recognised. Please try again in better light.', 'error');
-    return;
+    isBusy = false; btn.disabled = false; btn.textContent = '📷 ਹਾਜ਼ਰੀ ਦਰਜ ਕਰੋ — Mark Attendance';
+    showAttAlert('❌ Face not recognised. Try again in better light.', 'error'); return;
   }
 
   showAttAlert('⏳ Saving attendance…', 'info');
   var gps = null;
   if (navigator.geolocation) {
     try {
-      var pos = await new Promise(function(res, rej) {
-        navigator.geolocation.getCurrentPosition(res, rej, {timeout:5000});
-      });
-      gps = {lat: pos.coords.latitude, lng: pos.coords.longitude};
+      var pos = await new Promise(function(res,rej) { navigator.geolocation.getCurrentPosition(res,rej,{timeout:5000}); });
+      gps = { lat: pos.coords.latitude, lng: pos.coords.longitude };
     } catch(e) {}
   }
 
   var res = await api('recordAttendance', { name: result.label, gps: gps });
-  isBusy = false; document.getElementById('btn-punch').disabled = false;
-  document.getElementById('btn-punch').textContent = '📷 ਹਾਜ਼ਰੀ ਦਰਜ ਕਰੋ — Mark Attendance';
-
+  isBusy = false; btn.disabled = false; btn.textContent = '📷 ਹਾਜ਼ਰੀ ਦਰਜ ਕਰੋ — Mark Attendance';
   if (res.error) { showAttAlert('⚠️ ' + res.error, 'warning'); return; }
 
   if (res.type === 'IN') {
-    // Save to localStorage — she won't need to scan again today
     localStorage.setItem(PUNCH_KEY(), res.time);
     punchInTime = res.time;
     document.getElementById('cl-punch-time').textContent = res.time;
+    // Load tasks from sheet before showing checklist
+    await loadTasksFromSheet();
     showSuccessFlash('IN', res.name, res.time, res.date, '');
   } else {
     showSuccessFlash('OUT', res.name, res.time, res.date, res.workingHours);
   }
 });
 
-// ════════════════════════════════════
+// ════════════════════════════════════════════════════════
+//  PUNCH OUT (from checklist screen)
+// ════════════════════════════════════════════════════════
+async function didiPunchOut() {
+  if (isBusy) return;
+  isBusy = true;
+  var btn = document.getElementById('btn-punchout');
+  btn.disabled = true; btn.textContent = '⏳ Punching out…';
+
+  var gps = null;
+  if (navigator.geolocation) {
+    try {
+      var pos = await new Promise(function(res,rej) { navigator.geolocation.getCurrentPosition(res,rej,{timeout:5000}); });
+      gps = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    } catch(e) {}
+  }
+
+  var res = await api('recordAttendance', { name: DIDI_NAME, gps: gps, force: 'OUT' });
+  isBusy = false; btn.disabled = false; btn.textContent = '🔴 Punch Out — ਜਾਣਾ ਹੈ';
+
+  if (res.error) { alert('⚠️ ' + res.error); return; }
+  localStorage.removeItem(PUNCH_KEY());
+  showSuccessFlash('OUT', res.name, res.time, res.date, res.workingHours);
+  successGoToChecklist = false; // After OUT, go back to role screen
+}
+
+// ════════════════════════════════════════════════════════
 //  SUCCESS FLASH
-// ════════════════════════════════════
-var successGoToChecklist = false;
+// ════════════════════════════════════════════════════════
 function showSuccessFlash(type, name, time, date, hours) {
   successGoToChecklist = (type === 'IN');
   var isIN = type === 'IN';
@@ -773,19 +993,25 @@ function showSuccessFlash(type, name, time, date, hours) {
   badge.className = 'sf-badge ' + (isIN ? 'in' : 'out');
   document.getElementById('sf-name').textContent = name;
   document.getElementById('sf-time').textContent = '🕐 ' + time + '   📅 ' + date;
-  var hoursEl = document.getElementById('sf-hours');
-  if (!isIN && hours) { hoursEl.textContent = '⏱ ਕੁੱਲ ਕੰਮ ਦਾ ਸਮਾਂ: ' + hours; hoursEl.style.display = 'block'; }
-  else { hoursEl.style.display = 'none'; }
+  var hEl = document.getElementById('sf-hours');
+  if (!isIN && hours) { hEl.textContent = '⏱ ਕੁੱਲ ਕੰਮ ਦਾ ਸਮਾਂ: ' + hours; hEl.style.display = 'block'; }
+  else { hEl.style.display = 'none'; }
   document.getElementById('success-flash').classList.add('show');
 }
 function closeSuccess() {
   document.getElementById('success-flash').classList.remove('show');
-  if (successGoToChecklist) showChecklistScreen();
+  if (successGoToChecklist) {
+    showChecklistScreen();
+  } else {
+    // After punch out, go back to role selector
+    document.getElementById('bottom-nav').classList.add('hidden');
+    showScreen('scr-role');
+  }
 }
 
-// ════════════════════════════════════
+// ════════════════════════════════════════════════════════
 //  CHECKLIST SCREEN
-// ════════════════════════════════════
+// ════════════════════════════════════════════════════════
 function showChecklistScreen() {
   renderDailyTasks();
   renderWeeklyTasks();
@@ -794,49 +1020,38 @@ function showChecklistScreen() {
   showScreen('scr-checklist');
   document.getElementById('bottom-nav').classList.remove('hidden');
   document.getElementById('nav-checklist').classList.add('active');
-  document.getElementById('nav-admin').classList.remove('active');
 }
 
-function getCompletedTasks() {
-  try { return JSON.parse(localStorage.getItem(TASKS_KEY()) || '{}'); } catch(e) { return {}; }
-}
-function saveCompletedTasks(obj) {
-  localStorage.setItem(TASKS_KEY(), JSON.stringify(obj));
-}
+function getCompletedTasks() { try { return JSON.parse(localStorage.getItem(TASKS_KEY()) || '{}'); } catch(e) { return {}; } }
+function saveCompletedTasks(obj) { localStorage.setItem(TASKS_KEY(), JSON.stringify(obj)); }
 
 function toggleTask(taskId) {
   var done = getCompletedTasks();
-  if (done[taskId]) {
+  var wasChecked = !!done[taskId];
+  if (wasChecked) {
     delete done[taskId];
   } else {
-    done[taskId] = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    done[taskId] = fmtTime();
   }
   saveCompletedTasks(done);
-
-  // Update DOM
   var item = document.getElementById('ti-' + taskId);
   var check = document.getElementById('tc-' + taskId);
   if (item && check) {
-    if (done[taskId]) {
-      item.classList.add('done'); check.textContent = '✓';
-    } else {
-      item.classList.remove('done'); check.textContent = '';
-    }
+    item.classList.toggle('done', !wasChecked);
+    check.textContent = wasChecked ? '' : '✓';
   }
-
   updateProgress();
-
-  // Async sync to GAS (fire and forget)
-  api('saveTaskCompletion', { taskId: taskId, completed: !!done[taskId], time: done[taskId] || '' });
+  // Sync to sheet
+  api('saveTaskCompletion', { taskId: taskId, completed: !wasChecked, time: done[taskId] || '' });
 }
 
 function makeTaskItem(task, done) {
   var isDone = !!done[task.id];
   return '<div class="task-item' + (isDone ? ' done' : '') + '" id="ti-' + task.id + '" onclick="toggleTask(\'' + task.id + '\')">'
-    + '<div class="task-emoji">' + task.emoji + '</div>'
+    + '<div class="task-emoji">' + (task.emoji||'•') + '</div>'
     + '<div class="task-body">'
-    + '<div class="task-en">' + task.en + '</div>'
-    + '<div class="task-pa">' + task.pa + '</div>'
+    + '<div class="task-en">' + (task.en||task.pa||'') + '</div>'
+    + (task.pa && task.en ? '<div class="task-pa">' + task.pa + '</div>' : '')
     + '</div>'
     + '<div class="task-check" id="tc-' + task.id + '">' + (isDone ? '✓' : '') + '</div>'
     + '</div>';
@@ -844,75 +1059,77 @@ function makeTaskItem(task, done) {
 
 function renderDailyTasks() {
   var done = getCompletedTasks();
-  var html = DAILY_TASKS.map(function(t) { return makeTaskItem(t, done); }).join('');
-  document.getElementById('daily-tasks-list').innerHTML = html;
+  if (!TASKS.daily.length) {
+    document.getElementById('daily-tasks-list').innerHTML = '<div class="loading-tasks">⚠️ No daily tasks found.<br>Add tasks in Google Sheet → Tasks sheet.</div>';
+    return;
+  }
+  document.getElementById('daily-tasks-list').innerHTML = TASKS.daily.map(function(t) { return makeTaskItem(t, done); }).join('');
 }
 
 function renderWeeklyTasks() {
   var done = getCompletedTasks();
-  var today = new Date().getDay(); // 0–6
-  var html = '';
-
-  // Group tasks by day
+  var today = new Date().getDay();
+  if (!TASKS.weekly.length) {
+    document.getElementById('weekly-tasks-list').innerHTML = '<div class="loading-tasks">⚠️ No weekly tasks found.</div>';
+    return;
+  }
   var dayGroups = {};
-  WEEKLY_TASKS.forEach(function(t) {
-    if (!dayGroups[t.day]) dayGroups[t.day] = [];
-    dayGroups[t.day].push(t);
+  TASKS.weekly.forEach(function(t) {
+    var d = parseInt(t.day) || 0;
+    if (!dayGroups[d]) dayGroups[d] = [];
+    dayGroups[d].push(t);
   });
-
-  // Show today's tasks first, then rest of week
   var dayOrder = [];
   for (var i = 0; i < 7; i++) {
     var d = (today + i) % 7;
     if (dayGroups[d]) dayOrder.push(d);
   }
-
+  var html = '';
   dayOrder.forEach(function(day) {
     var isToday = day === today;
-    var dayLabel = DAY_NAMES_PA[day];
     html += '<div class="weekly-day-header' + (isToday ? ' today-hl' : '') + '">'
-      + dayLabel + (isToday ? ' <span class="today-tag">TODAY</span>' : '') + '</div>';
+      + DAY_NAMES[day] + (isToday ? ' <span class="today-tag">TODAY</span>' : '') + '</div>';
     dayGroups[day].forEach(function(t) { html += makeTaskItem(t, done); });
   });
-
   document.getElementById('weekly-tasks-list').innerHTML = html;
 }
 
 function renderMonthlyTasks() {
   var done = getCompletedTasks();
-  var today = new Date();
-  var weekOfMonth = Math.ceil(today.getDate() / 7);
-  var html = '';
-
-  [1,2,3,4].forEach(function(w) {
-    var tasks = MONTHLY_TASKS.filter(function(t) { return t.week === w; });
-    if (!tasks.length) return;
-    var isCurrentWeek = w === weekOfMonth;
-    html += '<div class="weekly-day-header' + (isCurrentWeek ? ' today-hl' : '') + '">'
-      + 'Week ' + w + ' — ਹਫ਼ਤਾ ' + w + (isCurrentWeek ? ' <span class="today-tag">THIS WEEK</span>' : '') + '</div>';
-    tasks.forEach(function(t) { html += makeTaskItem(t, done); });
+  var weekNum = Math.ceil(new Date().getDate() / 7);
+  if (!TASKS.monthly.length) {
+    document.getElementById('monthly-tasks-list').innerHTML = '<div class="loading-tasks">⚠️ No monthly tasks found.</div>';
+    return;
+  }
+  var weekGroups = {};
+  TASKS.monthly.forEach(function(t) {
+    var w = parseInt(t.week) || 1;
+    if (!weekGroups[w]) weekGroups[w] = [];
+    weekGroups[w].push(t);
   });
-
+  var html = '';
+  [1,2,3,4].forEach(function(w) {
+    if (!weekGroups[w]) return;
+    var isNow = w === weekNum;
+    html += '<div class="weekly-day-header' + (isNow ? ' today-hl' : '') + '">Week ' + w + ' — ਹਫ਼ਤਾ ' + w + (isNow ? ' <span class="today-tag">THIS WEEK</span>' : '') + '</div>';
+    weekGroups[w].forEach(function(t) { html += makeTaskItem(t, done); });
+  });
   document.getElementById('monthly-tasks-list').innerHTML = html;
 }
 
 function updateProgress() {
   var done = getCompletedTasks();
   var today = new Date().getDay();
-  var weekOfMonth = Math.ceil(new Date().getDate() / 7);
-
-  var allTasks = [].concat(
-    DAILY_TASKS,
-    WEEKLY_TASKS.filter(function(t) { return t.day === today; }),
-    MONTHLY_TASKS.filter(function(t) { return t.week === weekOfMonth; })
+  var weekNum = Math.ceil(new Date().getDate() / 7);
+  var allRelevant = TASKS.daily.concat(
+    TASKS.weekly.filter(function(t) { return parseInt(t.day) === today; }),
+    TASKS.monthly.filter(function(t) { return parseInt(t.week) === weekNum; })
   );
-
-  var total = allTasks.length;
-  var doneCount = allTasks.filter(function(t) { return !!done[t.id]; }).length;
-  var pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
-
+  var total = allRelevant.length;
+  var doneCount = allRelevant.filter(function(t) { return !!done[t.id]; }).length;
+  var pct = total > 0 ? Math.round((doneCount/total)*100) : 0;
   document.getElementById('cl-prog-fill').style.width = pct + '%';
-  document.getElementById('cl-prog-label').textContent = doneCount + ' of ' + total + ' tasks done today — ' + pct + '%';
+  document.getElementById('cl-prog-label').textContent = doneCount + ' of ' + total + ' tasks done — ' + pct + '%';
 }
 
 function switchTab(tab) {
@@ -922,62 +1139,31 @@ function switchTab(tab) {
   });
 }
 
-// ════════════════════════════════════
-//  ADMIN SCREEN
-// ════════════════════════════════════
-function showAdminScreen() {
-  showScreen('scr-admin');
-  document.getElementById('nav-checklist').classList.remove('active');
-  document.getElementById('nav-admin').classList.add('active');
-}
-function backFromAdmin() {
-  if (localStorage.getItem(PUNCH_KEY())) {
-    showChecklistScreen();
-  } else {
-    showScreen('scr-attend');
-    document.getElementById('bottom-nav').classList.add('hidden');
-  }
-}
-function navTo(dest) {
-  if (dest === 'checklist') showChecklistScreen();
-  else if (dest === 'admin') showAdminScreen();
-}
-
-// Registration
+// ════════════════════════════════════════════════════════
+//  ADMIN ACTIONS
+// ════════════════════════════════════════════════════════
 var isRegistering = false;
 async function startRegistration() {
   var name = document.getElementById('reg-name').value.trim();
   if (!name) { showAlert('reg-alert','⚠️ Enter a name.','error'); return; }
   if (isRegistering || isBusy) return;
   isRegistering = true; isBusy = true;
-
   if (!cameraStarted) startCamera();
   document.getElementById('reg-cam-wrap').style.display = 'block';
-  document.getElementById('btn-register').disabled = true;
-  document.getElementById('btn-register').textContent = '📸 Capturing face samples…';
-  showAlert('reg-alert','⏳ Face the camera and hold still…','info');
-
-  var vid = document.getElementById('video');
-  // small delay to let video2 render
+  var btn = document.getElementById('btn-register');
+  btn.disabled = true; btn.textContent = '📸 Capturing…';
+  showAlert('reg-alert','⏳ Face the camera — hold still…','info');
   await sleep(400);
-
-  var frames = await captureFrames(vid, REG_FRAMES);
+  var frames = await captureFrames(document.getElementById('video2') || document.getElementById('video'), REG_FRAMES);
   isRegistering = false; isBusy = false;
-  document.getElementById('btn-register').disabled = false;
-  document.getElementById('btn-register').textContent = '📸 Scan & Register Face';
-
-  if (!frames) {
-    showAlert('reg-alert','❌ Could not detect face clearly. Move closer & improve lighting.','error');
-    return;
-  }
-
-  showAlert('reg-alert','⏳ Saving face to sheet…','info');
+  btn.disabled = false; btn.textContent = '📸 Scan & Register Face';
+  if (!frames) { showAlert('reg-alert','❌ Face not detected clearly. Move closer.','error'); return; }
+  showAlert('reg-alert','⏳ Saving to sheet…','info');
   var payload = JSON.stringify(frames.map(function(d) { return Array.from(d); }));
   var res = await api('registerUser', { name: name, descriptor: payload });
-
   if (res.success) {
     document.getElementById('reg-cam-wrap').style.display = 'none';
-    showAlert('reg-alert','✅ ' + name + ' registered successfully!','success');
+    showAlert('reg-alert','✅ ' + name + ' registered!','success');
     await loadDatabase();
   } else {
     showAlert('reg-alert','⚠️ ' + res.message,'error');
@@ -991,75 +1177,64 @@ async function manualPunchIn() {
   document.getElementById('cl-punch-time').textContent = time;
   var res = await api('recordAttendance', { name: DIDI_NAME, gps: null, force: 'IN' });
   showAlert('manual-alert', res.error ? '⚠️ ' + res.error : '✅ Punched IN at ' + time, res.error ? 'warning' : 'success');
+  loadAdminStats();
 }
 
 async function adminPunchOut() {
   var res = await api('recordAttendance', { name: DIDI_NAME, gps: null, force: 'OUT' });
-  showAlert('manual-alert', res.error ? '⚠️ ' + res.error : '✅ Punched OUT. Hours: ' + (res.workingHours || '—'), res.error ? 'warning' : 'success');
+  showAlert('manual-alert', res.error ? '⚠️ ' + res.error : '✅ Punched OUT. Hours: ' + (res.workingHours||'—'), res.error ? 'warning' : 'success');
+  loadAdminStats();
 }
 
 async function loadAdminReport() {
   var res = await api('getDailyReport', {});
   var html = '';
-  if (res.error) { html = '<div style="color:red;font-size:0.82rem;">' + res.error + '</div>'; }
-  else if (!res.staff || !res.staff.length) { html = '<div style="color:#888;font-size:0.82rem;">No records today.</div>'; }
-  else {
-    res.staff.forEach(function(s) {
-      html += '<div class="rpt-row"><div><div class="rpt-name">' + s.name + '</div>'
-        + '<div class="rpt-time">'
-        + '<span class="badge badge-in">IN ' + (s.inTime||'—') + '</span> '
-        + (s.outTime ? '<span class="badge badge-out">OUT ' + s.outTime + '</span>' : '<span style="color:#888;font-size:0.72rem;">Still In</span>')
-        + (s.workingHours ? ' &nbsp;⏱ ' + s.workingHours : '')
-        + '</div></div></div>';
-    });
-  }
+  if (res.error) html = '<div style="color:red;font-size:0.82rem;">' + res.error + '</div>';
+  else if (!res.staff || !res.staff.length) html = '<div style="color:#888;font-size:0.82rem;">No records today.</div>';
+  else res.staff.forEach(function(s) {
+    html += '<div class="rpt-row"><div><div class="rpt-name">' + s.name + '</div>'
+      + '<div class="rpt-time"><span class="badge badge-in">IN ' + (s.inTime||'—') + '</span> '
+      + (s.outTime ? '<span class="badge badge-out">OUT ' + s.outTime + '</span>' : '<span style="color:#888;font-size:0.72rem;">Still In</span>')
+      + (s.workingHours ? ' &nbsp;⏱ ' + s.workingHours : '') + '</div></div></div>';
+  });
   document.getElementById('admin-report-content').innerHTML = html;
 }
 
 async function runSheetSetup() {
   showAlert('setup-alert','⏳ Setting up sheets…','info');
   var res = await api('setupSheets', {});
-  showAlert('setup-alert', res.error ? '❌ ' + res.error : '✅ ' + (res.message || 'Sheets created successfully!'), res.error ? 'error' : 'success');
+  showAlert('setup-alert', res.error ? '❌ ' + res.error : '✅ ' + (res.message||'Done!'), res.error ? 'error' : 'success');
 }
 
-// ════════════════════════════════════
+// ════════════════════════════════════════════════════════
 //  SCREEN & UI HELPERS
-// ════════════════════════════════════
+// ════════════════════════════════════════════════════════
 function showScreen(id) {
-  currentScreen = id;
-  var screens = ['scr-load','scr-attend','scr-checklist','scr-admin'];
-  screens.forEach(function(s) {
+  ['scr-role','scr-adminpw','scr-load','scr-attend','scr-checklist','scr-admin'].forEach(function(s) {
     document.getElementById(s).classList.toggle('active', s === id);
   });
 }
-
 function setStatus(msg, color) {
-  var dot = document.getElementById('sdot');
-  var txt = document.getElementById('stext');
+  var dot = document.getElementById('sdot'), txt = document.getElementById('stext');
   if (dot) dot.className = 'dot ' + color;
   if (txt) txt.textContent = msg;
-  if (isReady) {
-    var btn = document.getElementById('btn-punch');
-    if (btn) btn.disabled = false;
-  }
+  if (isReady) { var b = document.getElementById('btn-punch'); if (b) b.disabled = false; }
 }
-
 function showAttAlert(msg, type) {
   var el = document.getElementById('att-alert');
   el.textContent = msg; el.className = 'alert ' + type + ' show';
   if (type !== 'info') setTimeout(function() { el.classList.remove('show'); }, 4000);
 }
-
 function showAlert(id, msg, type) {
-  var el = document.getElementById(id);
-  if (!el) return;
+  var el = document.getElementById(id); if (!el) return;
   el.textContent = msg; el.className = 'alert ' + type + ' show';
   if (type !== 'info') setTimeout(function() { el.classList.remove('show'); }, 5000);
 }
+function navTo(dest) { if (dest === 'checklist') showChecklistScreen(); }
 
-// ════════════════════════════════════
-//  GAS API HELPER
-// ════════════════════════════════════
+// ════════════════════════════════════════════════════════
+//  GAS API
+// ════════════════════════════════════════════════════════
 async function api(action, payload) {
   try {
     var res = await fetch(GAS_URL + '?action=' + action, {
@@ -1068,9 +1243,7 @@ async function api(action, payload) {
       body: JSON.stringify(payload)
     });
     return await res.json();
-  } catch(e) {
-    return { error: 'Network error: ' + e.message };
-  }
+  } catch(e) { return { error: 'Network error: ' + e.message }; }
 }
 </script>
 </body>
